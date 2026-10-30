@@ -171,8 +171,9 @@ break the rule. `DeviceIoControl` joins the restricted list if Kingston is ever 
 ### D18. Tests compile `Core/` directly
 
 **Context.** The app is a NativeAOT executable, and its types are internal.
-**Decision.** `tests/CloudStatus.Core.Tests` (xUnit) includes the sources of `Core/` and
-`Device/Commands.cs` as linked files instead of referencing the app project. It is the only project
+**Decision.** `tests/CloudStatus.Core.Tests` (xUnit) includes the sources of `Core/`,
+`Device/Commands.cs` and `Device/SupportedDevices.cs` as linked files instead of referencing the app
+project. It is the only project
 with NuGet packages, and it is not distributed.
 **Consequences.** Anything in `Core/` that needs Win32 fails to compile in the tests, which also
 enforces the purity rule.

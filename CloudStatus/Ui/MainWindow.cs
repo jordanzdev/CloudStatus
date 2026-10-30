@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using CloudStatus.Device;
 using CloudStatus.Native;
 using static CloudStatus.Native.User32;
 
@@ -44,6 +45,10 @@ internal static class MainWindow
 
             case TrayIcon.CallbackMessage:
                 App.OnTrayEvent(TrayIcon.ParseCallback(wParam, lParam, out POINT anchor), anchor);
+                return true;
+
+            case WM_DEVICECHANGE:
+                DongleWatcher.OnDeviceChange(wParam, lParam);
                 return true;
 
             case WM_DPICHANGED:

@@ -6,7 +6,7 @@ spec is not started until the specs it depends on are at least Implemented.
 | Spec | Title | Depends on | Blocked by | Status |
 |---|---|---|---|---|
 | [001](001-app-skeleton.md) | App skeleton, build and CI | — | — | Implemented |
-| 002 | Dongle discovery, interface selection, hot plug | 001 | — | Not started |
+| [002](002-dongle-discovery.md) | Dongle discovery, interface selection, hot plug | 001 | — | Implemented |
 | 003 | Overlapped HID transport in the message loop | 002 | OQ-05 is settled by its own first test | Not started |
 | 004 | Status query: battery, charging, on/off, push events | 003 | OQ-02, OQ-03 | Not started |
 | 005 | Tray icon with percentage and colors, tooltip | 004 | — | Not started |

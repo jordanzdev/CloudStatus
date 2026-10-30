@@ -1,3 +1,4 @@
+using CloudStatus.Device;
 using CloudStatus.Native;
 using CloudStatus.Ui;
 
@@ -16,6 +17,8 @@ internal static class App
             return 1;
 
         TrayIcon.Create(MainWindow.Handle);
+        DongleWatcher.Changed += TrayIcon.Refresh;
+        DongleWatcher.Start(MainWindow.Handle); // after the icon, so a slow search never delays it
         return MessageLoop.Run() ? 0 : 1;
     }
 
@@ -34,6 +37,7 @@ internal static class App
             return;
         s_isShutDown = true;
 
+        DongleWatcher.Stop();
         TrayIcon.Remove();
     }
 }

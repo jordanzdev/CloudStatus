@@ -38,6 +38,16 @@ internal unsafe struct WNDCLASSEXW
     public nint hIconSm;
 }
 
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct DEV_BROADCAST_DEVICEINTERFACE_W
+{
+    public uint dbcc_size;
+    public uint dbcc_devicetype;
+    public uint dbcc_reserved;
+    public Guid dbcc_classguid;
+    public fixed char dbcc_name[1]; // null-terminated, longer than declared
+}
+
 internal static unsafe partial class User32
 {
     const string Lib = "user32.dll";
@@ -50,12 +60,19 @@ internal static unsafe partial class User32
     public const uint WM_ENDSESSION = 0x0016;
     public const uint WM_CONTEXTMENU = 0x007B;
     public const uint WM_TIMER = 0x0113;
+    public const uint WM_DEVICECHANGE = 0x0219;
     public const uint WM_DPICHANGED = 0x02E0;
     public const uint WM_APP = 0x8000;
 
     // Window styles
     public const uint WS_OVERLAPPED = 0x00000000;
     public const uint WS_EX_TOOLWINDOW = 0x00000080;
+
+    // Device notifications
+    public const nint DBT_DEVICEARRIVAL = 0x8000;
+    public const nint DBT_DEVICEREMOVECOMPLETE = 0x8004;
+    public const uint DBT_DEVTYP_DEVICEINTERFACE = 5;
+    public const uint DEVICE_NOTIFY_WINDOW_HANDLE = 0;
 
     // Message loop
     public const uint INFINITE = 0xFFFFFFFF;
@@ -158,4 +175,11 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial nint LoadCursorW(nint instance, nint name);
+
+    [LibraryImport(Lib)]
+    public static partial nint RegisterDeviceNotificationW(nint recipient, void* filter, uint flags);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool UnregisterDeviceNotification(nint notification);
 }
