@@ -1,3 +1,4 @@
+using CloudStatus.Core;
 using CloudStatus.Device;
 using CloudStatus.Native;
 using static CloudStatus.Native.Shell32;
@@ -27,6 +28,7 @@ internal static unsafe class TrayIcon
     static nint s_icon;
     static bool s_isAdded;
     static int s_addRetries;
+    static string s_shownTooltip = "";
 
     public static void Create(nint window)
     {
@@ -58,11 +60,17 @@ internal static unsafe class TrayIcon
     public static void OnDpiChanged(uint dpi)
     {
         LoadIcon(dpi);
-        Refresh();
+        Modify();
     }
 
-    /// <summary>Shows the current state in the icon and tooltip.</summary>
+    /// <summary>Shows the current state, only if its text changed.</summary>
     public static void Refresh()
+    {
+        if (CurrentTooltip() != s_shownTooltip)
+            Modify();
+    }
+
+    static void Modify()
     {
         if (!s_isAdded)
             return;
@@ -141,16 +149,17 @@ internal static unsafe class TrayIcon
         data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
         data.uCallbackMessage = CallbackMessage;
         data.hIcon = s_icon;
-        CopyText(CurrentTooltip(), data.szTip, TooltipCapacity);
+        s_shownTooltip = CurrentTooltip();
+        CopyText(s_shownTooltip, data.szTip, TooltipCapacity);
         return data;
     }
 
-    static string CurrentTooltip() => HeadsetLink.State switch
+    static string CurrentTooltip() => HeadsetLink.Power switch
     {
-        LinkState.BatteryKnown => Strings.TooltipBattery(HeadsetLink.BatteryPercent, HeadsetLink.LatencyMs),
-        LinkState.NoResponse => Strings.TooltipNoResponse,
-        LinkState.Failed => Strings.TooltipFailed(HeadsetLink.LastError),
-        _ => DongleWatcher.IsConnected ? Strings.TooltipDongleConnected : Strings.TooltipNoDongle,
+        HeadsetPower.On => Strings.TooltipBattery(HeadsetLink.BatteryPercent, HeadsetLink.Charge),
+        HeadsetPower.Off => Strings.TooltipHeadsetOff,
+        HeadsetPower.Checking => Strings.TooltipDongleConnected,
+        _ => Strings.TooltipNoDongle,
     };
 
     static void CopyText(string text, char* destination, int capacity)

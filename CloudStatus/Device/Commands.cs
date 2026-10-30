@@ -10,5 +10,8 @@ internal static class Commands
     /// <summary>HP battery query, command 0x02 (docs/protocol.md, section 6).</summary>
     public static readonly byte[] QueryBattery = [0x06, 0xFF, 0xBB, 0x02, 0x00];
 
-    public static readonly byte[][] All = [QueryBattery];
+    /// <summary>HP charging query, command 0x03 (docs/protocol.md, section 6).</summary>
+    public static readonly byte[] QueryCharging = [0x06, 0xFF, 0xBB, 0x03, 0x00];
+
+    public static readonly byte[][] All = [QueryBattery, QueryCharging];
 }
