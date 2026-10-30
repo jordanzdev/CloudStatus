@@ -15,10 +15,12 @@ internal static unsafe class DongleWatcher
     static HidCandidate s_selected;
     static bool s_isConnected;
 
-    /// <summary>Raised when <see cref="IsConnected"/> changes.</summary>
+    /// <summary>Raised when <see cref="IsConnected"/> or <see cref="Selected"/> changes.</summary>
     public static event Action? Changed;
 
     public static bool IsConnected => s_isConnected;
+
+    public static ref readonly HidCandidate Selected => ref s_selected;
 
     /// <summary>Registers first and searches second, so a dongle plugged in between them is not missed.</summary>
     public static void Start(nint window)
@@ -75,8 +77,9 @@ internal static unsafe class DongleWatcher
     static void Search()
     {
         bool wasConnected = s_isConnected;
+        HidCandidate previous = s_selected;
         s_isConnected = HidDiscovery.TryFind(out s_selected);
-        if (s_isConnected != wasConnected)
+        if (s_isConnected != wasConnected || (s_isConnected && !DevicePath.IsSame(s_selected.Path, previous.Path)))
             Changed?.Invoke();
     }
 }
