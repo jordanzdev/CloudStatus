@@ -1,0 +1,51 @@
+name: Build
+
+# Checks every pull request and every push to main: the code must not use any API that CloudStatus
+# promises never to use, the tests must pass, and the exe must build within its size budget.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Check forbidden APIs
+        shell: pwsh
+        run: ./tools/Test-ForbiddenApis.ps1
+
+      - name: Check that the policy script catches violations
+        shell: pwsh
+        run: ./tools/Test-ForbiddenApis.Tests.ps1
+
+      - name: Unit tests
+        shell: pwsh
+        run: dotnet test tests/CloudStatus.Core.Tests/CloudStatus.Core.Tests.csproj -c Release
+
+      - name: Build exe
+        shell: pwsh
+        run: ./build.ps1 -Version 0.0.0
+
+      - name: Check size budget and artifacts
+        shell: pwsh
+        run: ./tools/Test-Artifacts.ps1 -Version 0.0.0
+
+      - name: Smoke test
+        shell: pwsh
+        run: ./tools/Test-Smoke.ps1 -Exe artifacts/CloudStatus-0.0.0-portable.exe
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: CloudStatus-build-${{ github.sha }}
+          path: artifacts/*-portable.exe
+          retention-days: 14
