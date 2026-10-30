@@ -23,6 +23,7 @@ $forbidden = [ordered]@{
     'input injection'  = 'SendInput|keybd_event|mouse_event'
     'other process'    = 'OpenProcess|ReadProcessMemory|WriteProcessMemory|CreateRemoteThread|CreateToolhelp32Snapshot|Process32(First|Next)|Module32(First|Next)|EnumProcesses|EnumProcessModules|System\.Diagnostics\.Process'
     'HID write'        = 'HidD_SetOutputReport|HidD_SetFeature|\bDeviceIoControl\b'
+    'HID read'         = 'HidD_Get\w*String|\bReadFile\b|\bGENERIC_READ\b|\bGENERIC_WRITE\b'
     'threading'        = '\bTask\b|\bValueTask\b|\basync\b|\bawait\b|ThreadPool|System\.Threading\.Timer|\bnew Thread\b|\bCreateThread\b|\bParallel\.'
     'audio'            = 'IMMDevice|MMDeviceEnumerator|IAudioClient|IAudioEndpoint|\bwaveOut|mmdevapi'
     'graphics'         = '\bd3d\d*|\bdxgi\b|opengl32|Direct3D'
@@ -35,6 +36,7 @@ $forbidden = [ordered]@{
 $restricted = @(
     @{ Name = 'HID write'; Pattern = '\bWriteFile\b'; Allowed = '^CloudStatus/(Native/Kernel32\.cs|Device/HidTransport\.cs)$' }
     @{ Name = 'P/Invoke'; Pattern = '\[(LibraryImport|DllImport)\b'; Allowed = '^CloudStatus/Native/' }
+    @{ Name = 'device access'; Pattern = '\bCreateFileW\b'; Allowed = '^CloudStatus/(Native/Kernel32\.cs|Device/)' }
     @{ Name = 'network'; Pattern = '\bWinHttp\w*'; Allowed = '^CloudStatus/(Native/WinHttp\.cs|Updates/)' }
 )
 

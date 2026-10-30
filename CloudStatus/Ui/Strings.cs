@@ -17,5 +17,7 @@ internal static class Strings
     static string Pick(string spanish, string english) => s_isEnglish ? english : spanish;
 
     // Tray
+    public static string TooltipDongleConnected => Pick("CloudStatus: Dongle conectado", "CloudStatus: Dongle connected");
+    public static string TooltipNoDongle => Pick("CloudStatus: Sin dongle", "CloudStatus: No dongle");
     public static string MenuExit => Pick("Salir", "Exit");
 }

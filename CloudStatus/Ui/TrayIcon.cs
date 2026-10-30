@@ -1,3 +1,4 @@
+using CloudStatus.Device;
 using CloudStatus.Native;
 using static CloudStatus.Native.Shell32;
 using static CloudStatus.Native.User32;
@@ -57,6 +58,12 @@ internal static unsafe class TrayIcon
     public static void OnDpiChanged(uint dpi)
     {
         LoadIcon(dpi);
+        Refresh();
+    }
+
+    /// <summary>Shows the current state in the icon and tooltip.</summary>
+    public static void Refresh()
+    {
         if (!s_isAdded)
             return;
         NOTIFYICONDATAW data = CreateStateData();
@@ -134,7 +141,7 @@ internal static unsafe class TrayIcon
         data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
         data.uCallbackMessage = CallbackMessage;
         data.hIcon = s_icon;
-        CopyText(Strings.AppName, data.szTip, TooltipCapacity);
+        CopyText(DongleWatcher.IsConnected ? Strings.TooltipDongleConnected : Strings.TooltipNoDongle, data.szTip, TooltipCapacity);
         return data;
     }
 

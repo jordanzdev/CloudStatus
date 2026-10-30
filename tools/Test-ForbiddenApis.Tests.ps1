@@ -61,6 +61,12 @@ Assert-Check 'WriteFile in the transport is allowed' 'CloudStatus/Device/HidTran
 Assert-Check 'P/Invoke outside Native' $bad '[LibraryImport("x.dll")]' $true
 Assert-Check 'P/Invoke in Native is allowed' 'CloudStatus/Native/Hid.cs' '[LibraryImport("x.dll")]' $false
 Assert-Check 'WinHTTP outside Updates' $bad 'WinHttpOpen(0);' $true
+Assert-Check 'device access outside Device' $bad 'CreateFileW(0);' $true
+Assert-Check 'device access in Device is allowed' 'CloudStatus/Device/Other.cs' 'CreateFileW(0);' $false
+Assert-Check 'opening a device for writing' 'CloudStatus/Device/Other.cs' 'GENERIC_WRITE' $true
+Assert-Check 'opening a device for reading' 'CloudStatus/Device/Other.cs' 'GENERIC_READ' $true
+Assert-Check 'reading from a device' 'CloudStatus/Device/Other.cs' 'ReadFile(0);' $true
+Assert-Check 'reading device strings' 'CloudStatus/Device/Other.cs' 'HidD_GetProductString(0);' $true
 
 if ($failures -gt 0) {
     Write-Output "$failures check(s) failed."
