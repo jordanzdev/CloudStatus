@@ -11,6 +11,7 @@
   <!-- Linked, not referenced (ARCHITECTURE.md, D18): Core must compile with no Win32 at all. -->
   <ItemGroup>
     <Compile Include="..\..\CloudStatus\Core\**\*.cs" LinkBase="Core" />
+    <Compile Include="..\..\CloudStatus\Device\SupportedDevices.cs" LinkBase="Device" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
