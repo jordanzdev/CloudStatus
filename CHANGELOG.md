@@ -12,6 +12,8 @@ GitHub Release.
 - Tray app skeleton: a single instance with a tray icon and an *Exit* menu, in English and Spanish.
   It does not talk to the headset yet.
 - The tooltip shows whether a supported dongle is connected, and follows it being plugged in or
-  removed. Nothing is sent to the headset yet.
+  removed.
+- At each connection, CloudStatus asks the headset for its battery level once and shows it in the
+  tooltip, with the response time. This is the first thing it sends to the headset.
 
 [Unreleased]: https://github.com/jordanzdev/CloudStatus/commits/main

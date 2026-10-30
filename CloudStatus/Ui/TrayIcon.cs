@@ -141,9 +141,17 @@ internal static unsafe class TrayIcon
         data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
         data.uCallbackMessage = CallbackMessage;
         data.hIcon = s_icon;
-        CopyText(DongleWatcher.IsConnected ? Strings.TooltipDongleConnected : Strings.TooltipNoDongle, data.szTip, TooltipCapacity);
+        CopyText(CurrentTooltip(), data.szTip, TooltipCapacity);
         return data;
     }
+
+    static string CurrentTooltip() => HeadsetLink.State switch
+    {
+        LinkState.BatteryKnown => Strings.TooltipBattery(HeadsetLink.BatteryPercent, HeadsetLink.LatencyMs),
+        LinkState.NoResponse => Strings.TooltipNoResponse,
+        LinkState.Failed => Strings.TooltipFailed(HeadsetLink.LastError),
+        _ => DongleWatcher.IsConnected ? Strings.TooltipDongleConnected : Strings.TooltipNoDongle,
+    };
 
     static void CopyText(string text, char* destination, int capacity)
     {

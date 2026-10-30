@@ -43,6 +43,10 @@ internal static class MainWindow
                 TrayIcon.OnAddRetryTimer();
                 return true;
 
+            case WM_TIMER when (nuint)wParam == HeadsetLink.DeadlineTimerId:
+                HeadsetLink.OnDeadlineTimer();
+                return true;
+
             case TrayIcon.CallbackMessage:
                 App.OnTrayEvent(TrayIcon.ParseCallback(wParam, lParam, out POINT anchor), anchor);
                 return true;

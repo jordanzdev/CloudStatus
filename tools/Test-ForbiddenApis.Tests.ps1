@@ -67,6 +67,8 @@ Assert-Check 'opening a device for writing' 'CloudStatus/Device/Other.cs' 'GENER
 Assert-Check 'opening a device for reading' 'CloudStatus/Device/Other.cs' 'GENERIC_READ' $true
 Assert-Check 'reading from a device' 'CloudStatus/Device/Other.cs' 'ReadFile(0);' $true
 Assert-Check 'reading device strings' 'CloudStatus/Device/Other.cs' 'HidD_GetProductString(0);' $true
+Assert-Check 'opening a device in the transport is allowed' 'CloudStatus/Device/HidTransport.cs' 'GENERIC_READ | GENERIC_WRITE' $false
+Assert-Check 'reading in the transport is allowed' 'CloudStatus/Device/HidTransport.cs' 'ReadFile(0);' $false
 
 if ($failures -gt 0) {
     Write-Output "$failures check(s) failed."

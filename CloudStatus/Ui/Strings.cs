@@ -19,5 +19,9 @@ internal static class Strings
     // Tray
     public static string TooltipDongleConnected => Pick("CloudStatus: Dongle conectado", "CloudStatus: Dongle connected");
     public static string TooltipNoDongle => Pick("CloudStatus: Sin dongle", "CloudStatus: No dongle");
+    public static string TooltipNoResponse => Pick("CloudStatus: Dongle conectado, sin respuesta", "CloudStatus: Dongle connected, no response");
+    public static string TooltipBattery(byte percent, long latencyMs) =>
+        latencyMs < 0 ? $"CloudStatus: {percent} %" : $"CloudStatus: {percent} % ({latencyMs} ms)";
+    public static string TooltipFailed(int error) => $"CloudStatus: Error {error}";
     public static string MenuExit => Pick("Salir", "Exit");
 }
