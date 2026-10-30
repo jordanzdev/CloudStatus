@@ -1,6 +1,6 @@
 # 002: Dongle discovery, interface selection and hot plug
 
-**Status:** Approved
+**Status:** Implemented
 
 ## Context
 
@@ -132,3 +132,4 @@ protocol.md gives one usage for both, and it cannot be tested here.
 
 - 2026-10-30: Draft.
 - 2026-10-30: Approved.
+- 2026-10-30: Implemented, `[hw]` criteria pending.
