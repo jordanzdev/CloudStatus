@@ -1,6 +1,6 @@
 # 001: App skeleton, build and CI
 
-**Status:** Draft
+**Status:** Implemented
 
 ## Context
 
@@ -153,3 +153,5 @@ None block this spec.
 ## Status history
 
 - 2026-10-30: Draft.
+- 2026-10-30: Approved.
+- 2026-10-30: Implemented, `[hw]` criteria pending.
