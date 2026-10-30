@@ -13,7 +13,7 @@ GitHub Release.
   It does not talk to the headset yet.
 - The tooltip shows whether a supported dongle is connected, and follows it being plugged in or
   removed.
-- At each connection, CloudStatus asks the headset for its battery level once and shows it in the
-  tooltip, with the response time. This is the first thing it sends to the headset.
+- The tooltip shows the battery, whether it is charging, and whether the headset is off. Charging
+  and power changes appear as they happen; the battery is read every 5 minutes.
 
 [Unreleased]: https://github.com/jordanzdev/CloudStatus/commits/main

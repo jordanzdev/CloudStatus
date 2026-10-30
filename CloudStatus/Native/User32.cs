@@ -143,6 +143,9 @@ internal static unsafe partial class User32
     public static partial nuint SetTimer(nint hwnd, nuint id, uint elapseMs, nint timerProc);
 
     [LibraryImport(Lib)]
+    public static partial nuint SetCoalescableTimer(nint hwnd, nuint id, uint elapseMs, nint timerProc, uint toleranceMs);
+
+    [LibraryImport(Lib)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool KillTimer(nint hwnd, nuint id);
 
