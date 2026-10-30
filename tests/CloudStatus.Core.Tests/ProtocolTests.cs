@@ -12,8 +12,45 @@ public class ProtocolTests
     [Fact]
     public void Commands_AreExactlyTheAllowedSet()
     {
-        byte[] only = Assert.Single(Commands.All);
-        Assert.Equal(new byte[] { 0x06, 0xFF, 0xBB, 0x02, 0x00 }, only);
+        Assert.Collection(Commands.All,
+            battery => Assert.Equal(new byte[] { 0x06, 0xFF, 0xBB, 0x02, 0x00 }, battery),
+            charging => Assert.Equal(new byte[] { 0x06, 0xFF, 0xBB, 0x03, 0x00 }, charging));
+    }
+
+    // Observed on the target hardware (docs/protocol.md, Push events).
+    [Theory]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x03, 0x01, 0x00 }, ChargeState.Charging)]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x03, 0x00, 0x00 }, ChargeState.NotCharging)]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x03, 0x02, 0x00 }, ChargeState.Full)]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x03, 0x07, 0x00 }, ChargeState.Error)]
+    internal void TryParseCharging_ReadsTheState(byte[] report, ChargeState expected)
+    {
+        Assert.True(HpReports.TryParseCharging(report, out ChargeState state));
+        Assert.Equal(expected, state);
+    }
+
+    [Theory]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x01, 0x01, 0x00 }, true)]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x01, 0x04, 0x00 }, true)]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x01, 0x03, 0x00 }, false)]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x01, 0x02, 0x00 }, false)]
+    [InlineData(new byte[] { 0x06, 0xFF, 0xBB, 0x01, 0x63, 0x00 }, false)]
+    public void TryParsePower_TreatsEverythingButOnAsOff(byte[] report, bool expected)
+    {
+        Assert.True(HpReports.TryParsePower(report, out bool isOn));
+        Assert.Equal(expected, isOn);
+    }
+
+    [Fact]
+    public void Parsers_IgnoreOtherCommandsAndShortReports()
+    {
+        byte[] mute = [0x06, 0xFF, 0xBB, 0x20, 0x01, 0x00];
+
+        Assert.False(HpReports.TryParseCharging(mute, out _));
+        Assert.False(HpReports.TryParsePower(mute, out _));
+        Assert.False(HpReports.TryParseBattery(mute, out _));
+        Assert.False(HpReports.TryParsePower(new byte[] { 0x06, 0xFF, 0xBB, 0x01 }, out _));
+        Assert.False(HpReports.TryParseCharging(new byte[] { 0x06, 0xFF, 0xBB, 0x03 }, out _));
     }
 
     [Fact]

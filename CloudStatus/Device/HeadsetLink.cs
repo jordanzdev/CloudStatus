@@ -3,67 +3,50 @@ using static CloudStatus.Native.User32;
 
 namespace CloudStatus.Device;
 
-internal enum LinkState
-{
-    Closed,
-    Waiting,
-    BatteryKnown,
-    NoResponse,
-    Failed,
-}
-
-/// <summary>Talks to the dongle through <see cref="HidTransport"/>: one battery query per connection.</summary>
+/// <summary>
+/// Connects <see cref="HidTransport"/> to <see cref="HeadsetMonitor"/>: reports and timers go in,
+/// and the actions that come out become queries and timers. One command at a time.
+/// </summary>
 internal static class HeadsetLink
 {
     public const nuint DeadlineTimerId = 3;
+    public const nuint PollTimerId = 4;
 
     const uint DeadlineMs = 500;
-    const long LatencyUnknown = -1;
+    const uint PollIntervalMs = 5 * 60 * 1000;
+    const uint PollToleranceMs = 30 * 1000; // lets Windows group the wake-up with others
 
     static nint s_window;
+    static HeadsetMonitor s_monitor;
     static CommandTracker s_tracker;
 
-    /// <summary>Raised when any of the values below changes.</summary>
+    /// <summary>Raised after anything that may change what is shown.</summary>
     public static event Action? Changed;
 
-    public static LinkState State { get; private set; }
+    public static HeadsetPower Power => s_monitor.Power;
 
-    public static byte BatteryPercent { get; private set; }
+    public static byte BatteryPercent => s_monitor.BatteryPercent;
 
-    /// <summary>Milliseconds from the write to its response, or a negative value if it is not known.</summary>
-    public static long LatencyMs { get; private set; } = LatencyUnknown;
-
-    /// <summary>Win32 error when <see cref="State"/> is <see cref="LinkState.Failed"/>.</summary>
-    public static int LastError { get; private set; }
+    public static ChargeState Charge => s_monitor.Charge;
 
     public static void Initialize(nint window)
     {
         s_window = window;
         HidTransport.ReportReceived += OnReport;
-        HidTransport.Failed += OnFailed;
+        HidTransport.Failed += _ => OnConnectionLost();
     }
 
     public static void Connect(in HidCandidate target)
     {
         Disconnect();
-        if (!HidTransport.TryOpen(target))
-        {
-            SetState(LinkState.Failed);
-            return;
-        }
-
-        LatencyMs = LatencyUnknown;
-        SetState(LinkState.Waiting);
-        if (HidTransport.TrySend(Commands.QueryBattery) && s_tracker.TryStart(HpReports.BatteryCommand, Environment.TickCount64))
-            SetTimer(s_window, DeadlineTimerId, DeadlineMs, 0);
+        if (HidTransport.TryOpen(target))
+            Apply(s_monitor.OnDongleConnected());
     }
 
     public static void Disconnect()
     {
-        StopDeadline();
-        s_tracker.TryTimeOut();
+        OnConnectionLost();
         HidTransport.Close();
-        State = LinkState.Closed;
     }
 
     /// <summary>
@@ -78,41 +61,60 @@ internal static class HeadsetLink
             return;
 
         HidTransport.CancelWrite();
-        SetState(LinkState.NoResponse);
+        Apply(s_monitor.OnTimeout());
     }
+
+    public static void OnPollTimer() => Apply(s_monitor.OnPollDue());
 
     static void OnReport(ReadOnlySpan<byte> report)
     {
         if (!HpReports.TryGetCommand(report, out byte command))
             return;
 
-        if (s_tracker.TryComplete(command, Environment.TickCount64, out long elapsed))
-        {
+        if (s_tracker.TryComplete(command, Environment.TickCount64, out _))
             StopDeadline();
-            LatencyMs = elapsed;
-        }
 
-        // Matched by content: a late response, or one to NGENUITY's query, is just as valid.
         if (HpReports.TryParseBattery(report, out byte percent))
-        {
-            BatteryPercent = percent;
-            SetState(LinkState.BatteryKnown);
-        }
+            Apply(s_monitor.OnBattery(percent));
+        else if (HpReports.TryParseCharging(report, out ChargeState charge))
+            Apply(s_monitor.OnCharging(charge));
+        else if (HpReports.TryParsePower(report, out bool isOn))
+            Apply(s_monitor.OnPower(isOn));
     }
 
-    static void OnFailed(int error)
+    static void OnConnectionLost()
     {
         StopDeadline();
         s_tracker.TryTimeOut();
-        LastError = error;
-        SetState(LinkState.Failed);
+        Apply(s_monitor.OnDongleLost());
+    }
+
+    static void Apply(MonitorAction action)
+    {
+        if ((action & MonitorAction.StartPolling) != 0)
+            SetCoalescableTimer(s_window, PollTimerId, PollIntervalMs, 0, PollToleranceMs);
+        if ((action & MonitorAction.StopPolling) != 0)
+            KillTimer(s_window, PollTimerId);
+
+        if ((action & MonitorAction.QueryBattery) != 0)
+            Send(Commands.QueryBattery, HpReports.BatteryCommand);
+        else if ((action & MonitorAction.QueryCharging) != 0)
+            Send(Commands.QueryCharging, HpReports.ChargingCommand);
+
+        Changed?.Invoke();
+    }
+
+    /// <summary>A command that cannot go out now counts as unanswered, so nothing waits for it.</summary>
+    static void Send(byte[] report, byte command)
+    {
+        if (s_tracker.IsInFlight)
+            return;
+
+        if (HidTransport.TrySend(report) && s_tracker.TryStart(command, Environment.TickCount64))
+            SetTimer(s_window, DeadlineTimerId, DeadlineMs, 0);
+        else if (HidTransport.IsOpen)
+            Apply(s_monitor.OnTimeout());
     }
 
     static void StopDeadline() => KillTimer(s_window, DeadlineTimerId);
-
-    static void SetState(LinkState state)
-    {
-        State = state;
-        Changed?.Invoke();
-    }
 }

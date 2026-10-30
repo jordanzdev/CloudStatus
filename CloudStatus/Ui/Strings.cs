@@ -1,3 +1,4 @@
+using CloudStatus.Core;
 using CloudStatus.Native;
 
 namespace CloudStatus.Ui;
@@ -19,9 +20,13 @@ internal static class Strings
     // Tray
     public static string TooltipDongleConnected => Pick("CloudStatus: Dongle conectado", "CloudStatus: Dongle connected");
     public static string TooltipNoDongle => Pick("CloudStatus: Sin dongle", "CloudStatus: No dongle");
-    public static string TooltipNoResponse => Pick("CloudStatus: Dongle conectado, sin respuesta", "CloudStatus: Dongle connected, no response");
-    public static string TooltipBattery(byte percent, long latencyMs) =>
-        latencyMs < 0 ? $"CloudStatus: {percent} %" : $"CloudStatus: {percent} % ({latencyMs} ms)";
-    public static string TooltipFailed(int error) => $"CloudStatus: Error {error}";
+    public static string TooltipHeadsetOff => Pick("CloudStatus: Cascos apagados", "CloudStatus: Headset off");
+    public static string TooltipBattery(byte percent, ChargeState charge) => charge switch
+    {
+        ChargeState.Charging => $"CloudStatus: {percent} %, " + Pick("cargando", "charging"),
+        ChargeState.Full => $"CloudStatus: {percent} %, " + Pick("completa", "full"),
+        ChargeState.Error => $"CloudStatus: {percent} %, " + Pick("error de carga", "charging error"),
+        _ => $"CloudStatus: {percent} %",
+    };
     public static string MenuExit => Pick("Salir", "Exit");
 }

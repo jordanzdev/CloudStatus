@@ -47,6 +47,10 @@ internal static class MainWindow
                 HeadsetLink.OnDeadlineTimer();
                 return true;
 
+            case WM_TIMER when (nuint)wParam == HeadsetLink.PollTimerId:
+                HeadsetLink.OnPollTimer();
+                return true;
+
             case TrayIcon.CallbackMessage:
                 App.OnTrayEvent(TrayIcon.ParseCallback(wParam, lParam, out POINT anchor), anchor);
                 return true;
