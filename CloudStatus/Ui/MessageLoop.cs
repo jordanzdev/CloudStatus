@@ -1,11 +1,12 @@
+using CloudStatus.Device;
 using CloudStatus.Native;
 using static CloudStatus.Native.User32;
 
 namespace CloudStatus.Ui;
 
 /// <summary>
-/// The app's only loop. The thread sleeps in MsgWaitForMultipleObjectsEx until a message arrives, so
-/// it costs 0 % CPU while idle, and later specs can add I/O events to the wait. No allocations.
+/// The app's only loop. The thread sleeps in MsgWaitForMultipleObjectsEx until a message or an I/O
+/// event arrives, so it costs 0 % CPU while idle. No allocations.
 /// </summary>
 internal static unsafe class MessageLoop
 {
@@ -17,9 +18,12 @@ internal static unsafe class MessageLoop
     {
         while (true)
         {
-            uint result = MsgWaitForMultipleObjectsEx(0, null, INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
+            uint handleCount = HidTransport.WaitCount;
+            uint result = MsgWaitForMultipleObjectsEx(handleCount, HidTransport.WaitHandles, INFINITE, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
             if (result == WAIT_FAILED)
                 return false;
+            if (result < handleCount)
+                HidTransport.Pump();
 
             MSG message;
             while (PeekMessageW(&message, 0, 0, 0, PM_REMOVE))
