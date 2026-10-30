@@ -223,19 +223,34 @@ what is forbidden is sending the `0x01` query.
 
 ### Push events
 
-CloudStatus keeps a read pending, so these arrive at no CPU cost. The list is what the sources
-state, and nothing here has been verified on the target hardware (OQ-02).
+CloudStatus keeps a read pending, so these arrive at no CPU cost.
 
 | Variant | Cmd | Event | Sources |
 |---|---|---|---|
-| HP | `0x01` | Connection changes, including headset power on | [H] |
-| HP | `0x20` | Mic mute changes | [H] |
-| HP | `0x21` | Sidetone changes | [H] |
+| HP | `0x01` | `[4]` `3` headset off, `1` headset on | [L]; event in [H], value `3` only in [L] |
+| HP | `0x03` | `[4]` charging state, on plugging and unplugging the cable | [L] |
+| HP | `0x20` | `[4]` mic mute, on the button and at power on | [L] [H] |
+| HP | `0x21` | Sidetone changes | [H], not observed |
 | Kingston | `0x08` | Mute button | [H] |
 | Kingston | `0x04` | Sporadic, unknown. [H] says it does **not** fire on charger or battery changes | [H] |
 
-According to [H], the battery level is **not** pushed and must be queried. No source says that
-charging changes are pushed on either variant.
+### Push events observed on the target hardware [L]
+
+Listening for 5 minutes on `0x03F0:0x018B` on 2026-10-30, with every other headset program closed
+and nothing sent:
+
+| Action | Report |
+|---|---|
+| Plug in the charging cable | `06 FF BB 03 01 00 ...` |
+| Unplug it | `06 FF BB 03 00 00 ...` |
+| Turn the headset off | `06 FF BB 01 03 00 ...` |
+| Turn it on | `06 FF BB 01 01 00 ...`, then 25 ms later `06 FF BB 20 00 01 ...` |
+| Press mute | `06 FF BB 20 01 00 ...` |
+| Press mute again | `06 FF BB 20 00 00 ...` |
+
+The meaning of byte 5 in the report at power on (`01`) is unknown. **Battery is not pushed**: no
+battery report arrived in that time or in 2 minutes at rest, which matches [H]. Nothing else arrived,
+so with the headset idle CloudStatus only wakes up for its own queries.
 
 ### Observed responses [L]
 
@@ -259,8 +274,8 @@ auto94's monitor) before drawing any conclusion about push events.
 | ID | Question | Blocks | How to answer |
 |---|---|---|---|
 | **OQ-01** | Usage page and usage of the Kingston vendor interface. No public source gives them. | Kingston support | Device Manager or a PowerShell dump from someone who owns one (`HID_DEVICE_UP:xxxx_U:xxxx` in Hardware Ids) |
-| **OQ-02** | Which push events does `0x03F0:0x018B` really send? Above all: charging changes and power on/off. | Polling interval, spec 003 | Capture scenarios S1–S4 |
-| **OQ-03** | What happens when the dongle is plugged in and the headset is off: no response, or a response with battery 0? | Off detection, spec 003 | Capture scenario S3 |
+| **OQ-02** | ~~Which push events does `0x03F0:0x018B` really send?~~ **Answered:** charging, power on and off, and mute. See [Push events](#push-events). Not seen: value `2` (fully charged). | — | — |
+| **OQ-03** | What does a battery query return when the app starts with the headset already off: no response, or a response with battery 0? While running, power off is pushed. | Start-up state, spec 004 | Spec 003 criterion AC-003-10 |
 | **OQ-04** | Real latency of a command on this dongle. **Partly answered:** one sample of 34 ms, write to response, on `0x03F0:0x018B`. | 100 ms budget | Spec 003 criterion AC-003-11, 10 samples |
 | **OQ-05** | ~~Does `WriteFile` work on `COL03`?~~ **Answered: yes**, overlapped `WriteFile` with a 20-byte report, 2026-10-30 [L]. | — | — |
 | **OQ-06** | Headset firmware on HP. **Only Kingston has a documented command** (`0x11`). | Spec 010 | Capture scenario S5 |
