@@ -17,12 +17,23 @@ internal static class App
             return 1;
 
         TrayIcon.Create(MainWindow.Handle);
-        DongleWatcher.Changed += TrayIcon.Refresh;
+        HeadsetLink.Initialize(MainWindow.Handle);
+        HeadsetLink.Changed += TrayIcon.Refresh;
+        DongleWatcher.Changed += OnDongleChanged;
         DongleWatcher.Start(MainWindow.Handle); // after the icon, so a slow search never delays it
         return MessageLoop.Run() ? 0 : 1;
     }
 
     public static void Exit() => MainWindow.Close();
+
+    static void OnDongleChanged()
+    {
+        if (DongleWatcher.IsConnected)
+            HeadsetLink.Connect(DongleWatcher.Selected);
+        else
+            HeadsetLink.Disconnect();
+        TrayIcon.Refresh();
+    }
 
     public static void OnTrayEvent(TrayEvent trayEvent, POINT anchor)
     {
@@ -37,6 +48,7 @@ internal static class App
             return;
         s_isShutDown = true;
 
+        HeadsetLink.Disconnect();
         DongleWatcher.Stop();
         TrayIcon.Remove();
     }

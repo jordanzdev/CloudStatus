@@ -36,6 +36,10 @@ The exe budget leaves about 370 KB over CursorLock, and CloudStatus drops its ho
 Run the release build, not a debug build, with the headset on and connected. Let the app settle for
 5 minutes first.
 
+**Close every other program that talks to the headset** (NGENUITY, HyperHeadset, auto94's monitor).
+CloudStatus receives a copy of the responses to their queries, so they wake it up: HyperHeadset
+alone causes a wake-up about every 5 s, which is not CloudStatus's own cost.
+
 ### Memory, threads and handles
 
 ```powershell
