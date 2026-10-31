@@ -8,7 +8,7 @@ spec is not started until the specs it depends on are at least Implemented.
 | [001](001-app-skeleton.md) | App skeleton, build and CI | — | — | Implemented |
 | [002](002-dongle-discovery.md) | Dongle discovery, interface selection, hot plug | 001 | — | Implemented |
 | [003](003-hid-transport.md) | Overlapped HID transport in the message loop | 002 | OQ-05 is settled by its own first test | Implemented |
-| 004 | Status query: battery, charging, on/off, push events | 003 | OQ-02, OQ-03 | Not started |
+| [004](004-status-query.md) | Status query: battery, charging, on/off, push events | 003 | — | Implemented |
 | 005 | Tray icon with percentage and colors, tooltip | 004 | — | Not started |
 | 006 | Low-battery notice | 005 | — | Not started |
 | 007 | Settings and persistence in HKCU, `--startup` | 005 | — | Not started |
