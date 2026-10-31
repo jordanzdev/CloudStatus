@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="..\..\CloudStatus\Core\**\*.cs" LinkBase="Core" />
     <Compile Include="..\..\CloudStatus\Device\SupportedDevices.cs" LinkBase="Device" />
+    <Compile Include="..\..\CloudStatus\Device\Commands.cs" LinkBase="Device" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
