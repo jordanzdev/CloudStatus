@@ -12,7 +12,7 @@ internal enum TrayEvent
     ContextMenuRequested,
 }
 
-/// <summary>Notification-area icon: the app logo and a tooltip.</summary>
+/// <summary>Notification-area icon: the headset status, drawn in memory, and a tooltip.</summary>
 internal static unsafe class TrayIcon
 {
     public const uint CallbackMessage = WM_APP + 1;
@@ -28,12 +28,20 @@ internal static unsafe class TrayIcon
     static nint s_icon;
     static bool s_isAdded;
     static int s_addRetries;
-    static string s_shownTooltip = "";
+    static uint s_dpi;
+    static IconDescription s_shownIcon;
+    static ShownState s_shownState;
+
+    readonly record struct ShownState(HeadsetPower Power, byte BatteryPercent, ChargeState Charge);
+
+    static ShownState CurrentState => new(HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge);
 
     public static void Create(nint window)
     {
         s_window = window;
-        LoadIcon(GetDpiForWindow(window));
+        s_dpi = GetDpiForWindow(window);
+        s_shownState = CurrentState;
+        Redraw();
         Add();
     }
 
@@ -53,29 +61,38 @@ internal static unsafe class TrayIcon
     {
         s_isAdded = false;
         s_addRetries = 0;
-        LoadIcon(GetDpiForWindow(s_window));
+        s_dpi = GetDpiForWindow(s_window);
+        nint previous = Redraw();
         Add();
+        DestroyIfLoaded(ref previous);
     }
 
     public static void OnDpiChanged(uint dpi)
     {
-        LoadIcon(dpi);
-        Modify();
+        s_dpi = dpi;
+        Show(Redraw());
     }
 
-    /// <summary>Shows the current state, only if its text changed.</summary>
+    /// <summary>Shows the current state. Allocation-free unless it changed.</summary>
     public static void Refresh()
     {
-        if (CurrentTooltip() != s_shownTooltip)
-            Modify();
+        ShownState state = CurrentState;
+        if (state == s_shownState)
+            return;
+        s_shownState = state;
+
+        Show(CurrentIcon() != s_shownIcon ? Redraw() : 0);
     }
 
-    static void Modify()
+    /// <summary>The previous icon is destroyed only once the shell has the new one.</summary>
+    static void Show(nint previousIcon)
     {
-        if (!s_isAdded)
-            return;
-        NOTIFYICONDATAW data = CreateStateData();
-        Shell_NotifyIconW(NIM_MODIFY, &data);
+        if (s_isAdded)
+        {
+            NOTIFYICONDATAW data = CreateStateData();
+            Shell_NotifyIconW(NIM_MODIFY, &data);
+        }
+        DestroyIfLoaded(ref previousIcon);
     }
 
     public static void OnAddRetryTimer()
@@ -118,16 +135,31 @@ internal static unsafe class TrayIcon
         Shell_NotifyIconW(NIM_SETVERSION, &data);
     }
 
-    /// <summary>Loads the logo at the small-icon size for <paramref name="dpi"/>, replacing the previous one.</summary>
-    static void LoadIcon(uint dpi)
+    /// <summary>
+    /// Draws the current state and returns the previous icon for the caller to destroy. If drawing
+    /// fails the previous icon stays, and with none to keep the logo stands in.
+    /// </summary>
+    static nint Redraw()
     {
-        int size = GetSystemMetricsForDpi(SM_CXSMICON, dpi);
+        int size = GetSystemMetricsForDpi(SM_CXSMICON, s_dpi);
         if (size <= 0)
             size = FallbackIconSize;
 
-        DestroyIfLoaded(ref s_icon); // the shell keeps its own copy of the icon currently shown
-        s_icon = LoadImageW(AppInstance.Handle, ApplicationIconResourceId, IMAGE_ICON, size, size, LR_DEFAULTCOLOR);
+        IconDescription description = CurrentIcon();
+        nint icon = StatusIcon.Create(description, size);
+        if (icon == 0 && s_icon == 0)
+            icon = LoadImageW(AppInstance.Handle, ApplicationIconResourceId, IMAGE_ICON, size, size, LR_DEFAULTCOLOR);
+        if (icon == 0)
+            return 0;
+
+        nint previous = s_icon;
+        s_icon = icon;
+        s_shownIcon = description;
+        return previous;
     }
+
+    static IconDescription CurrentIcon() =>
+        IconDescription.Describe(HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge);
 
     static void DestroyIfLoaded(ref nint icon)
     {
@@ -149,8 +181,7 @@ internal static unsafe class TrayIcon
         data.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP | NIF_SHOWTIP;
         data.uCallbackMessage = CallbackMessage;
         data.hIcon = s_icon;
-        s_shownTooltip = CurrentTooltip();
-        CopyText(s_shownTooltip, data.szTip, TooltipCapacity);
+        CopyText(CurrentTooltip(), data.szTip, TooltipCapacity);
         return data;
     }
 

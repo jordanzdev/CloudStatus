@@ -15,5 +15,7 @@ GitHub Release.
   removed.
 - The tooltip shows the battery, whether it is charging, and whether the headset is off. Charging
   and power changes appear as they happen; the battery is read every 5 minutes.
+- The tray icon shows the battery number, with its background color showing the level, charging,
+  headset off or no dongle.
 
 [Unreleased]: https://github.com/jordanzdev/CloudStatus/commits/main
