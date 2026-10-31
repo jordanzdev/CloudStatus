@@ -4,8 +4,9 @@ A Windows 10/11 tray app that shows the status of a **HyperX Cloud II Wireless**
 charging, whether it is on, and firmware version. Built to cost nothing while playing
 Counter-Strike 2 competitively.
 
-> **Not usable yet.** The app runs but does not talk to the headset yet. The project follows Spec
-> Driven Development: code only comes after an approved spec.
+> **Early development.** The tray icon shows the battery and status of an HP-branded headset, but
+> there is no release, installer or settings yet. The project follows Spec Driven Development: code
+> only comes after an approved spec.
 
 Not affiliated with or endorsed by HyperX or HP.
 

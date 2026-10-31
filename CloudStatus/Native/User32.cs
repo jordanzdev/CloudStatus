@@ -10,6 +10,46 @@ internal struct POINT
 }
 
 [StructLayout(LayoutKind.Sequential)]
+internal struct RECT
+{
+    public int Left;
+    public int Top;
+    public int Right;
+    public int Bottom;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct ICONINFO
+{
+    public int fIcon;
+    public uint xHotspot;
+    public uint yHotspot;
+    public nint hbmMask;
+    public nint hbmColor;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct NONCLIENTMETRICSW
+{
+    public uint cbSize;
+    public int iBorderWidth;
+    public int iScrollWidth;
+    public int iScrollHeight;
+    public int iCaptionWidth;
+    public int iCaptionHeight;
+    public LOGFONTW lfCaptionFont;
+    public int iSmCaptionWidth;
+    public int iSmCaptionHeight;
+    public LOGFONTW lfSmCaptionFont;
+    public int iMenuWidth;
+    public int iMenuHeight;
+    public LOGFONTW lfMenuFont;
+    public LOGFONTW lfStatusFont;
+    public LOGFONTW lfMessageFont;
+    public int iPaddedBorderWidth;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 internal struct MSG
 {
     public nint hwnd;
@@ -92,6 +132,13 @@ internal static unsafe partial class User32
     public const uint IMAGE_ICON = 1;
     public const uint LR_DEFAULTCOLOR = 0;
     public const nint IDC_ARROW = 32512;
+
+    // Text and system settings
+    public const uint DT_CENTER = 0x0001;
+    public const uint DT_VCENTER = 0x0004;
+    public const uint DT_SINGLELINE = 0x0020;
+    public const uint DT_NOPREFIX = 0x0800;
+    public const uint SPI_GETNONCLIENTMETRICS = 0x0029;
 
     [LibraryImport(Lib)]
     public static partial ushort RegisterClassExW(WNDCLASSEXW* windowClass);
@@ -178,6 +225,16 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial nint LoadCursorW(nint instance, nint name);
+
+    [LibraryImport(Lib)]
+    public static partial nint CreateIconIndirect(ICONINFO* info);
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf16)]
+    public static partial int DrawTextW(nint hdc, string text, int count, RECT* rect, uint format);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SystemParametersInfoForDpi(uint action, uint param, void* data, uint winIni, uint dpi);
 
     [LibraryImport(Lib)]
     public static partial nint RegisterDeviceNotificationW(nint recipient, void* filter, uint flags);
