@@ -47,6 +47,26 @@ internal unsafe struct TASKDIALOGCONFIG
 }
 
 [StructLayout(LayoutKind.Sequential)]
+internal struct NMHDR
+{
+    public nint hwndFrom;
+    public nuint idFrom;
+    public uint code;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct NMCUSTOMDRAW
+{
+    public NMHDR hdr;
+    public uint dwDrawStage;
+    public nint hdc;
+    public RECT rc;
+    public nuint dwItemSpec;
+    public uint uItemState;
+    public nint lItemlParam;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 internal unsafe struct EDITBALLOONTIP
 {
     public uint cbStruct;
@@ -64,6 +84,17 @@ internal static unsafe partial class Comctl32
 
     public const uint ICC_STANDARD_CLASSES = 0x00004000;
 
+    public const uint NM_CUSTOMDRAW = unchecked((uint)-12);
+    public const uint CDDS_PREPAINT = 0x00000001;
+    public const nint CDRF_DODEFAULT = 0x00000000;
+    public const nint CDRF_SKIPDEFAULT = 0x00000004;
+    public const uint CDIS_SELECTED = 0x0001;
+    public const uint CDIS_DISABLED = 0x0004;
+    public const uint CDIS_FOCUS = 0x0010;
+    public const uint CDIS_HOT = 0x0040;
+    public const uint CDIS_SHOWKEYBOARDCUES = 0x0200;
+
+    public const uint TDF_USE_HICON_MAIN = 0x0002;
     public const uint TDF_ALLOW_DIALOG_CANCELLATION = 0x0008;
     public const uint TDF_USE_COMMAND_LINKS = 0x0010;
     public const uint TDF_POSITION_RELATIVE_TO_WINDOW = 0x1000;

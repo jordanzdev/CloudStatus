@@ -7,6 +7,21 @@ GitHub Release.
 
 ## [Unreleased]
 
+### Changed
+
+- **Windows 11 look.** Settings is laid out in cards with toggle switches, follows light and dark
+  mode (title bar included, with Mica on Windows 11 22H2 and later) and switches with Windows while
+  open. High contrast uses the system colors.
+- **Messages inside the window.** An invalid number is reported under its field, and save errors
+  and update-check results appear in a bar at the top of Settings instead of message boxes.
+- **Tray icon.** A healthy battery shows as the number alone, in the taskbar's own color; the
+  amber, red and teal backgrounds stay for what needs attention. *Headset off* and *No dongle* are
+  now a headset glyph, plain or crossed out.
+- **Tooltip and menu.** The tooltip has two lines, and the menu starts with the current state. The
+  menu follows dark mode.
+- **Low-battery notice** shows the battery icon itself instead of a generic warning.
+- **Installer** pages use the new light banners.
+
 ## [1.0.0] - 2026-11-05
 
 First release: the battery of a HyperX Cloud II Wireless (HP dongle) in the notification area, at

@@ -23,17 +23,11 @@ internal static class Strings
 
     static string Pick(string spanish, string english) => s_isEnglish ? english : spanish;
 
-    // Tray
-    public static string TooltipDongleConnected => Pick("CloudStatus: Dongle conectado", "CloudStatus: Dongle connected");
-    public static string TooltipNoDongle => Pick("CloudStatus: Sin dongle", "CloudStatus: No dongle");
-    public static string TooltipHeadsetOff => Pick("CloudStatus: Cascos apagados", "CloudStatus: Headset off");
-    public static string TooltipBattery(byte percent, ChargeState charge) => charge switch
-    {
-        ChargeState.Charging => $"CloudStatus: {percent} %, " + Pick("cargando", "charging"),
-        ChargeState.Full => $"CloudStatus: {percent} %, " + Pick("completa", "full"),
-        ChargeState.Error => $"CloudStatus: {percent} %, " + Pick("error de carga", "charging error"),
-        _ => $"CloudStatus: {percent} %",
-    };
+    // Tray (spec 013: two-line tooltip, and the state line at the top of the menu)
+    public static string Tooltip(HeadsetPower power, byte percent, ChargeState charge) =>
+        StatusText.Tooltip(s_isEnglish, power, percent, charge);
+    public static string StatusLine(HeadsetPower power, byte percent, ChargeState charge) =>
+        StatusText.Line(s_isEnglish, power, percent, charge);
     public static string MenuSettings => Pick("Ajustes…", "Settings…");
     public static string MenuExit => Pick("Salir", "Exit");
 
@@ -47,26 +41,36 @@ internal static class Strings
 
     // Settings window
     public static string SettingsTitle => $"CloudStatus {AppVersion.CurrentText} — " + Pick("Ajustes", "Settings");
-    public static string CheckLowBatteryNotice => Pick("Avisar cuando la batería esté baja", "Notify when the battery is low");
-    public static string LabelLowBatteryPercent => Pick("Batería baja por debajo de (%):", "Low battery below (%):");
-    public static string LabelPollMinutes => Pick("Leer la batería cada (min):", "Read the battery every (min):");
-    public static string LabelLanguage => Pick("Idioma:", "Language:");
-    public static string CheckStartWithWindows => Pick("Iniciar con Windows", "Start with Windows");
+    public static string HeadingBattery => Pick("Batería", "Battery");
+    public static string HeadingGeneral => Pick("General", "General");
+    public static string LabelLowBatteryNotice => Pick("Avisar cuando la batería esté baja", "Notify when the battery is low");
+    public static string LabelLowBatteryPercent => Pick("Batería baja por debajo de", "Low battery below");
+    public static string LabelPollMinutes => Pick("Leer la batería cada", "Read the battery every");
+    public static string LabelLanguage => Pick("Idioma", "Language");
+    public static string LabelStartWithWindows => Pick("Iniciar con Windows", "Start with Windows");
+    public const string UnitPercent = "%";
+    public const string UnitMinutes = "min";
+    public static string ButtonCloseMessage => Pick("Cerrar mensaje", "Close message");
     public static string ButtonSave => Pick("Guardar", "Save");
     public static string ButtonCancel => Pick("Cancelar", "Cancel");
     public static string LanguageAuto => Pick("Automático (sistema)", "Automatic (system)");
     public const string LanguageSpanish = "Español";
     public const string LanguageEnglish = "English";
-    public static string LowBatteryRange => $"({Config.MinLowBatteryPercent}–{Config.MaxLowBatteryPercent})";
-    public static string PollRange => $"({Config.MinPollMinutes}–{Config.MaxPollMinutes})";
+    public static string LowBatteryRange => s_isEnglish
+        ? $"{Config.MinLowBatteryPercent} to {Config.MaxLowBatteryPercent} %"
+        : $"Entre {Config.MinLowBatteryPercent} y {Config.MaxLowBatteryPercent} %";
+    public static string PollRange => s_isEnglish
+        ? $"{Config.MinPollMinutes} to {Config.MaxPollMinutes} minutes"
+        : $"Entre {Config.MinPollMinutes} y {Config.MaxPollMinutes} minutos";
 
+    // Shown under the field, in place of the range (spec 013, REQ-013-12).
     public static string ErrorInvalidLowBatteryPercent => s_isEnglish
-        ? $"The low battery limit must be between {Config.MinLowBatteryPercent} and {Config.MaxLowBatteryPercent} %."
-        : $"El límite de batería baja debe estar entre {Config.MinLowBatteryPercent} y {Config.MaxLowBatteryPercent} %.";
+        ? $"Enter a number from {Config.MinLowBatteryPercent} to {Config.MaxLowBatteryPercent}."
+        : $"Escribe un número entre {Config.MinLowBatteryPercent} y {Config.MaxLowBatteryPercent}.";
 
     public static string ErrorInvalidPollMinutes => s_isEnglish
-        ? $"The battery must be read every {Config.MinPollMinutes} to {Config.MaxPollMinutes} minutes."
-        : $"La batería debe leerse cada {Config.MinPollMinutes} a {Config.MaxPollMinutes} minutos.";
+        ? $"Enter a number from {Config.MinPollMinutes} to {Config.MaxPollMinutes}."
+        : $"Escribe un número entre {Config.MinPollMinutes} y {Config.MaxPollMinutes}.";
 
     public static string ErrorNotSaved => Pick(
         "No se pudieron guardar los ajustes en el registro. Se mantienen los anteriores.",

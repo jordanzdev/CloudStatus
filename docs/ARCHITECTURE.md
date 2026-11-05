@@ -198,3 +198,16 @@ Controls) leave up to 3 idle workers of the Windows thread pool, which start in 
 CPU. They are accepted as well (spec 007).
 **Consequences.** See [PERFORMANCE.md](PERFORMANCE.md). Any count above 2 at rest before Settings is
 opened, or any extra thread that starts in `CloudStatus.exe` or uses CPU, is a failure to explain.
+
+### D21. One undocumented API, for the dark menu
+
+**Context.** Windows has no documented way to give a Win32 popup menu its dark style. Spec 013 wants
+the tray menu to follow dark mode like the rest of the interface.
+**Decision.** `SetPreferredAppMode` (ordinal 135) and `FlushMenuThemes` (ordinal 136) of
+`uxtheme.dll` are called, looked up by ordinal in `Native/UxTheme.cs` only, and only on build 18362
+or later, where those ordinals are known. A missing export leaves the menu light. Nothing else in
+the app depends on them.
+**Consequences.** `tools/Test-ForbiddenApis.ps1` fails on `GetProcAddress` or an ordinal entry point
+anywhere else. If a Windows update changes the ordinals, the menu may lose its dark style; the app
+keeps working.
+

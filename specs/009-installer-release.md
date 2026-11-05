@@ -141,3 +141,4 @@ None block this spec.
 - 2026-11-05: Draft.
 - 2026-11-05: Approved.
 - 2026-11-05: Implemented, `[hw]` criteria pending.
+- 2026-11-05: REQ-009-09 (bitmaps) replaced by [spec 013](013-ui-redesign.md#changes-to-earlier-specs).

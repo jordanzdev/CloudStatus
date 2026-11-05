@@ -161,3 +161,5 @@ None block this spec.
 - 2026-11-05: Amended and approved: the cost of the first check and of repeated checks (budget table,
   AC-010-14).
 - 2026-11-05: Implemented, `[hw]` criteria pending.
+- 2026-11-05: Result message boxes replaced by the info bar of
+  [spec 013](013-ui-redesign.md#changes-to-earlier-specs).

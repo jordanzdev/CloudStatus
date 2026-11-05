@@ -13,7 +13,8 @@ internal enum CloseChoice
 
 /// <summary>
 /// Asked when the settings window is closed with the X button: keep running in the tray or exit.
-/// Uses a TaskDialog (Common Controls v6) and falls back to a Yes/No/Cancel message box.
+/// Uses a TaskDialog (Common Controls v6) with the app logo and a line under each choice, and
+/// falls back to a Yes/No/Cancel message box. Windows draws both, always in its light style.
 /// </summary>
 internal static unsafe class CloseConfirmation
 {
@@ -21,9 +22,11 @@ internal static unsafe class CloseConfirmation
     const int MinimizeButtonId = 100;
     const int ExitButtonId = 101;
 
-    public static CloseChoice Ask(nint owner) => TryAskWithTaskDialog(owner, out CloseChoice choice) ? choice : AskWithMessageBox(owner);
+    /// <param name="logo">The app icon for the dialog, owned by the caller; 0 shows none.</param>
+    public static CloseChoice Ask(nint owner, nint logo) =>
+        TryAskWithTaskDialog(owner, logo, out CloseChoice choice) ? choice : AskWithMessageBox(owner);
 
-    static bool TryAskWithTaskDialog(nint owner, out CloseChoice choice)
+    static bool TryAskWithTaskDialog(nint owner, nint logo, out CloseChoice choice)
     {
         choice = CloseChoice.Cancel;
         string minimize = Strings.CloseMinimizeToTray, exit = Strings.CloseExitApplication;
@@ -40,7 +43,9 @@ internal static unsafe class CloseConfirmation
                 cbSize = (uint)sizeof(TASKDIALOGCONFIG),
                 hwndParent = owner,
                 hInstance = AppInstance.Handle,
-                dwFlags = TDF_USE_COMMAND_LINKS | TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW,
+                dwFlags = TDF_USE_COMMAND_LINKS | TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW |
+                    (logo != 0 ? TDF_USE_HICON_MAIN : 0),
+                hMainIcon = logo,
                 dwCommonButtons = TDCBF_CANCEL_BUTTON,
                 pszWindowTitle = titleText,
                 pszMainInstruction = instructionText,

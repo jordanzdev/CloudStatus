@@ -1,20 +1,22 @@
 using CloudStatus.Core;
 using CloudStatus.Native;
+using CloudStatus.Ui.Drawing;
 using static CloudStatus.Native.Gdi32;
 using static CloudStatus.Native.User32;
 
 namespace CloudStatus.Ui;
 
 /// <summary>
-/// Draws the tray icon in memory: a rounded square with the battery number. The square is computed
-/// pixel by pixel in straight alpha. GDI text does not write alpha, so the number is drawn on a
-/// separate mask and its brightness becomes coverage.
+/// Draws the tray icon in memory (specs 005 and 013): a plate, a plain number, an outline or the
+/// headset glyph. Shapes are computed pixel by pixel in straight alpha. GDI text does not write
+/// alpha, so the number is drawn on a separate mask and its brightness becomes coverage.
 /// </summary>
 internal static unsafe class StatusIcon
 {
     const float CornerShare = 0.2f;
     const float HollowStrokeShare = 0.1f;
-    const int TextMargin = 1;
+    const float GlyphShare = 0.94f; // the headset fills this share of the icon's width
+    const int PlateTextMargin = 1; // inside the plate's rounded edge; a plain number uses the full width
     const int MinFontHeight = 6;
     const uint TextOnMask = 0xFFFFFF;
 
@@ -43,43 +45,73 @@ internal static unsafe class StatusIcon
     /// <summary>Draws into <paramref name="pixels"/>: size × size, top-down, 0xAARRGGBB with straight alpha.</summary>
     public static bool Render(in IconDescription description, int size, uint* pixels)
     {
-        DrawSquare(description, size, pixels);
+        switch (description.Shape)
+        {
+            case IconShape.Plate:
+                DrawSquare(description.Color, size, pixels, isHollow: false);
+                break;
+            case IconShape.Hollow:
+                DrawSquare(description.Color, size, pixels, isHollow: true);
+                break;
+            case IconShape.Headset:
+            case IconShape.HeadsetSlashed:
+                DrawHeadset(description.Color, size, pixels, description.Shape == IconShape.HeadsetSlashed);
+                break;
+            default: // IconShape.Number: the number alone, on transparent pixels
+                new Span<uint>(pixels, size * size).Clear();
+                break;
+        }
+
         return description.Number == IconDescription.NoNumber ||
-            DrawNumber(description.Number.ToString(), description, size, pixels);
+            DrawNumber(description.Number.ToString(), description.TextColor, size, pixels,
+                description.Shape == IconShape.Number ? 0 : PlateTextMargin);
     }
 
-    static void DrawSquare(in IconDescription description, int size, uint* pixels)
+    static void DrawSquare(uint color, int size, uint* pixels, bool isHollow)
     {
         float half = size / 2f;
         float radius = size * CornerShare;
         float stroke = Math.Max(1f, size * HollowStrokeShare);
-        uint background = description.Background & 0xFFFFFF;
+        color &= 0xFFFFFF;
 
         for (int y = 0; y < size; y++)
         {
             for (int x = 0; x < size; x++)
             {
-                float distance = DistanceToEdge(x + 0.5f - half, y + 0.5f - half, half, radius);
-                float coverage = Coverage(distance);
-                if (description.IsHollow)
-                    coverage -= Coverage(distance + stroke);
-                pixels[y * size + x] = ((uint)(coverage * 255f + 0.5f) << 24) | background;
+                float distance = Shapes.RoundedBox(x + 0.5f, y + 0.5f, half, half, half, half, radius);
+                float coverage = Shapes.Coverage(distance);
+                if (isHollow)
+                    coverage -= Shapes.Coverage(distance + stroke);
+                pixels[y * size + x] = ToPixel(coverage, color);
             }
         }
     }
 
-    /// <summary>Signed distance to the rounded square: negative inside.</summary>
-    static float DistanceToEdge(float x, float y, float half, float radius)
+    /// <summary>The logo's headset, scaled from its 256-unit grid to fit and centered.</summary>
+    static void DrawHeadset(uint color, int size, uint* pixels, bool isSlashed)
     {
-        float cornerX = Math.Abs(x) - (half - radius);
-        float cornerY = Math.Abs(y) - (half - radius);
-        float outsideX = Math.Max(cornerX, 0f), outsideY = Math.Max(cornerY, 0f);
-        return MathF.Sqrt(outsideX * outsideX + outsideY * outsideY) + Math.Min(Math.Max(cornerX, cornerY), 0f) - radius;
+        const float Width = Shapes.HeadsetRight - Shapes.HeadsetLeft;
+        const float CenterX = (Shapes.HeadsetLeft + Shapes.HeadsetRight) / 2f;
+        const float CenterY = (Shapes.HeadsetTop + Shapes.HeadsetBottom) / 2f;
+        float scale = size * GlyphShare / Width; // pixels per grid unit
+        float half = size / 2f;
+        color &= 0xFFFFFF;
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float gridX = CenterX + (x + 0.5f - half) / scale;
+                float gridY = CenterY + (y + 0.5f - half) / scale;
+                float distance = isSlashed ? Shapes.HeadsetSlashed(gridX, gridY) : Shapes.Headset(gridX, gridY);
+                pixels[y * size + x] = ToPixel(Shapes.Coverage(distance * scale), color);
+            }
+        }
     }
 
-    static float Coverage(float distance) => Math.Clamp(0.5f - distance, 0f, 1f);
+    static uint ToPixel(float coverage, uint color) => ((uint)(Math.Clamp(coverage, 0f, 1f) * 255f + 0.5f) << 24) | color;
 
-    static bool DrawNumber(string text, in IconDescription description, int size, uint* pixels)
+    static bool DrawNumber(string text, uint textColor, int size, uint* pixels, int margin)
     {
         nint dc = CreateCompatibleDC(0);
         if (dc == 0)
@@ -87,7 +119,7 @@ internal static unsafe class StatusIcon
 
         nint maskBitmap = CreateBitmapBuffer(size, out uint* mask);
         nint previousBitmap = maskBitmap != 0 ? SelectObject(dc, maskBitmap) : 0;
-        nint font = maskBitmap != 0 ? CreateFittingFont(dc, text, size) : 0;
+        nint font = maskBitmap != 0 ? CreateFittingFont(dc, text, size, margin) : 0;
         bool drawn = font != 0;
         if (drawn)
         {
@@ -97,7 +129,7 @@ internal static unsafe class StatusIcon
             var bounds = new RECT { Right = size, Bottom = size };
             DrawTextW(dc, text, -1, &bounds, DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
             GdiFlush(); // GDI batches its calls, and the mask is read directly below
-            Blend(mask, pixels, size * size, description.TextColor);
+            Blend(mask, pixels, size * size, textColor);
             SelectObject(dc, previousFont);
             DeleteObject(font);
         }
@@ -112,13 +144,13 @@ internal static unsafe class StatusIcon
     }
 
     /// <summary>The largest bold system font whose text fits, so "100" fits at every size.</summary>
-    static nint CreateFittingFont(nint dc, string text, int size)
+    static nint CreateFittingFont(nint dc, string text, int size, int margin)
     {
         LOGFONTW logFont = SystemFont.GetMessageFont();
         logFont.lfWeight = FW_BOLD;
         logFont.lfQuality = ANTIALIASED_QUALITY;
 
-        int available = size - 2 * TextMargin;
+        int available = size - 2 * margin;
         for (int height = size; height >= MinFontHeight; height--)
         {
             logFont.lfHeight = -height;
@@ -137,6 +169,7 @@ internal static unsafe class StatusIcon
         return 0;
     }
 
+    /// <summary>Paints the text color over the pixels, with the mask as coverage ("over" in straight alpha).</summary>
     static void Blend(uint* mask, uint* pixels, int count, uint textColor)
     {
         for (int i = 0; i < count; i++)
@@ -146,15 +179,17 @@ internal static unsafe class StatusIcon
                 continue;
 
             uint pixel = pixels[i];
-            uint alpha = Math.Max(pixel >> 24, coverage);
-            uint red = Mix(pixel >> 16, textColor >> 16, coverage);
-            uint green = Mix(pixel >> 8, textColor >> 8, coverage);
-            uint blue = Mix(pixel, textColor, coverage);
+            uint below = (pixel >> 24) * (255 - coverage) / 255; // what still shows of the pixel
+            uint alpha = coverage + below;
+            uint red = Over(textColor >> 16, pixel >> 16, coverage, below, alpha);
+            uint green = Over(textColor >> 8, pixel >> 8, coverage, below, alpha);
+            uint blue = Over(textColor, pixel, coverage, below, alpha);
             pixels[i] = (alpha << 24) | (red << 16) | (green << 8) | blue;
         }
     }
 
-    static uint Mix(uint from, uint to, uint amount) => ((from & 0xFF) * (255 - amount) + (to & 0xFF) * amount + 127) / 255;
+    static uint Over(uint top, uint bottom, uint topWeight, uint bottomWeight, uint alpha) =>
+        ((top & 0xFF) * topWeight + (bottom & 0xFF) * bottomWeight + alpha / 2) / alpha;
 
     static nint CreateBitmapBuffer(int size, out uint* pixels)
     {
