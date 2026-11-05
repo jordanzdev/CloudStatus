@@ -31,6 +31,8 @@ internal static unsafe class TrayIcon
     static uint s_dpi;
     static IconDescription s_shownIcon;
     static ShownState s_shownState;
+    static BatteryNotice s_pendingNotice;
+    static byte s_pendingPercent;
 
     readonly record struct ShownState(HeadsetPower Power, byte BatteryPercent, ChargeState Charge);
 
@@ -84,6 +86,30 @@ internal static unsafe class TrayIcon
         Show(CurrentIcon() != s_shownIcon ? Redraw() : 0);
     }
 
+    /// <summary>
+    /// Shows a silent low-battery notice (spec 006), or keeps the latest one until the icon can be
+    /// added. Windows decides when it appears: Do Not Disturb sends it to the notification center.
+    /// </summary>
+    public static void ShowNotice(BatteryNotice notice, byte percent)
+    {
+        if (notice == BatteryNotice.None)
+            return;
+        if (!s_isAdded)
+        {
+            s_pendingNotice = notice;
+            s_pendingPercent = percent;
+            return;
+        }
+        s_pendingNotice = BatteryNotice.None;
+
+        NOTIFYICONDATAW data = CreateBaseData();
+        data.uFlags = NIF_INFO;
+        data.dwInfoFlags = NIIF_WARNING | NIIF_NOSOUND | NIIF_RESPECT_QUIET_TIME;
+        CopyText(Strings.NoticeText(notice, percent), data.szInfo, InfoCapacity);
+        CopyText(Strings.NoticeTitle(notice), data.szInfoTitle, InfoTitleCapacity);
+        Shell_NotifyIconW(NIM_MODIFY, &data);
+    }
+
     /// <summary>The previous icon is destroyed only once the shell has the new one.</summary>
     static void Show(nint previousIcon)
     {
@@ -133,6 +159,7 @@ internal static unsafe class TrayIcon
         s_addRetries = 0;
         data.uVersion = NOTIFYICON_VERSION_4;
         Shell_NotifyIconW(NIM_SETVERSION, &data);
+        ShowNotice(s_pendingNotice, s_pendingPercent);
     }
 
     /// <summary>

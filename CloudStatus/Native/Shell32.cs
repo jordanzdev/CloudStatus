@@ -32,11 +32,18 @@ internal static unsafe partial class Shell32
     public const uint NIF_MESSAGE = 0x01;
     public const uint NIF_ICON = 0x02;
     public const uint NIF_TIP = 0x04;
+    public const uint NIF_INFO = 0x10;
     public const uint NIF_SHOWTIP = 0x80; // NOTIFYICON_VERSION_4 hides the standard tooltip without it
+
+    public const uint NIIF_WARNING = 0x2;
+    public const uint NIIF_NOSOUND = 0x10;
+    public const uint NIIF_RESPECT_QUIET_TIME = 0x80;
 
     public const uint NOTIFYICON_VERSION_4 = 4;
 
     public const int TooltipCapacity = 128;
+    public const int InfoCapacity = 256;
+    public const int InfoTitleCapacity = 64;
 
     [LibraryImport("shell32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]

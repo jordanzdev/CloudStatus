@@ -17,5 +17,7 @@ GitHub Release.
   and power changes appear as they happen; the battery is read every 5 minutes.
 - The tray icon shows the battery number, with its background color showing the level, charging,
   headset off or no dongle.
+- A silent Windows notice when the battery drops under 20 %, and again under 10 %. Each one is
+  shown once until the headset charges or recovers 5 points.
 
 [Unreleased]: https://github.com/jordanzdev/CloudStatus/commits/main
