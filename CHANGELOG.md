@@ -7,6 +7,11 @@ GitHub Release.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-05
+
+A new look: CloudStatus now fits in with Windows 11, in light and dark mode. Nothing changes in how
+the headset is read.
+
 ### Changed
 
 - **Windows 11 look.** Settings is laid out in cards with toggle switches, follows light and dark
@@ -54,5 +59,6 @@ no cost while gaming.
   a setting or touches firmware.
 - The binaries are not code-signed, so SmartScreen may warn the first time.
 
-[Unreleased]: https://github.com/jordanzdev/CloudStatus/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/jordanzdev/CloudStatus/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/jordanzdev/CloudStatus/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/jordanzdev/CloudStatus/releases/tag/v1.0.0
