@@ -76,6 +76,47 @@ internal static class Strings
         "Los ajustes se han guardado, pero no se pudo cambiar «Iniciar con Windows».",
         "The settings were saved, but \"Start with Windows\" could not be changed.");
 
+    // Updates (spec 010)
+    public static string ButtonCheckForUpdates => Pick("Buscar actualizaciones", "Check for updates");
+    public static string CheckingForUpdates => Pick("Comprobando…", "Checking…");
+    public static string DownloadingUpdate => Pick("Descargando…", "Downloading…");
+
+    public static string UpdateCheckFailed => Pick(
+        "No se pudo comprobar si hay actualizaciones. Revisa tu conexión a Internet.",
+        "Could not check for updates. Check your internet connection.");
+
+    public static string NoReleaseYet => Pick(
+        "Aún no se ha publicado ninguna versión de CloudStatus.",
+        "No version of CloudStatus has been published yet.");
+
+    public static string UpToDate(string current) => s_isEnglish
+        ? $"You have the latest version of CloudStatus ({current})."
+        : $"Tienes la última versión de CloudStatus ({current}).";
+
+    public static string UpdateAvailable(string available, string current) => s_isEnglish
+        ? $"A new version of CloudStatus is available: {available} (you have {current}).\n\nDownload and install it now? CloudStatus will close and the installer will open."
+        : $"Hay una versión nueva de CloudStatus: {available} (tienes la {current}).\n\n¿Descargarla e instalarla ahora? CloudStatus se cerrará y se abrirá el instalador.";
+
+    public static string UpdateAvailablePortable(string available, string current) => s_isEnglish
+        ? $"A new version of CloudStatus is available: {available} (you have {current}).\n\nYou are using the portable version. Open the download page?"
+        : $"Hay una versión nueva de CloudStatus: {available} (tienes la {current}).\n\nEstás usando la versión portable. ¿Abrir la página de descarga?";
+
+    public static string UpdateDownloadFailed => Pick(
+        "No se pudo descargar la actualización. Inténtalo de nuevo más tarde.",
+        "Could not download the update. Please try again later.");
+
+    public static string UpdateIntegrityFailed => Pick(
+        "La descarga no coincide con su suma SHA-256 publicada, así que no se ha instalado. Inténtalo de nuevo más tarde.",
+        "The download does not match its published SHA-256 checksum, so it was not installed. Please try again later.");
+
+    public static string UpdateLaunchFailed => Pick(
+        "No se pudo abrir el instalador descargado.",
+        "Could not open the downloaded installer.");
+
+    public static string ReleasePageFailed => Pick(
+        "No se pudo abrir la página de descarga.",
+        "Could not open the download page.");
+
     // Closing the settings window with the X button
     public static string CloseInstruction => Pick("¿Qué quieres hacer?", "What do you want to do?");
     public static string CloseContent => Pick(

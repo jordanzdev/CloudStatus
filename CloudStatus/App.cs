@@ -27,6 +27,7 @@ internal static class App
         // The only registry reads until the user saves (spec 007).
         Config.Current = ConfigStore.Load();
         StartupRegistration.Initialize();
+        InstallRegistration.Initialize();
         Strings.Apply(Config.Current.Language);
 
         if (!MainWindow.Create())

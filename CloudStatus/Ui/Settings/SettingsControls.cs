@@ -15,6 +15,7 @@ internal static unsafe class SettingsControls
     public const int PollMinutesId = 102;
     public const int LanguageId = 103;
     public const int StartWithWindowsId = 104;
+    public const int CheckForUpdatesId = 105;
     public const int SaveId = IDOK;
     public const int CancelId = IDCANCEL;
 
@@ -26,8 +27,7 @@ internal static unsafe class SettingsControls
 
     const int NumberMaxDigits = 2;
 
-    // id, x, y, width, height at 96 DPI. Combo box heights include the drop-down list. The space to
-    // the left of Save is kept for "Check for updates" (spec 010).
+    // id, x, y, width, height at 96 DPI. Combo box heights include the drop-down list.
     static ReadOnlySpan<short> Layout =>
     [
         LowBatteryNoticeId, 12, 12, 348, 20,
@@ -40,6 +40,7 @@ internal static unsafe class SettingsControls
         LanguageLabelId, 12, 107, 190, 20,
         LanguageId, 206, 104, 154, 200,
         StartWithWindowsId, 12, 140, 348, 20,
+        CheckForUpdatesId, 12, 176, 160, 26,
         SaveId, 192, 176, 80, 26,
         CancelId, 280, 176, 80, 26,
     ];
@@ -57,6 +58,7 @@ internal static unsafe class SettingsControls
         CreateLabel(window, LanguageLabelId, Strings.LabelLanguage);
         CreateChild(window, LanguageId, "COMBOBOX", null, WS_TABSTOP | WS_VSCROLL | CBS_DROPDOWNLIST, 0);
         CreateCheckBox(window, StartWithWindowsId, Strings.CheckStartWithWindows);
+        CreateChild(window, CheckForUpdatesId, "BUTTON", Strings.ButtonCheckForUpdates, WS_TABSTOP | BS_PUSHBUTTON, 0);
         CreateChild(window, SaveId, "BUTTON", Strings.ButtonSave, WS_TABSTOP | BS_DEFPUSHBUTTON, 0);
         CreateChild(window, CancelId, "BUTTON", Strings.ButtonCancel, WS_TABSTOP | BS_PUSHBUTTON, 0);
     }

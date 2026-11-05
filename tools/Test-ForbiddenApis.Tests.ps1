@@ -61,6 +61,10 @@ Assert-Check 'WriteFile in the transport is allowed' 'CloudStatus/Device/HidTran
 Assert-Check 'P/Invoke outside Native' $bad '[LibraryImport("x.dll")]' $true
 Assert-Check 'P/Invoke in Native is allowed' 'CloudStatus/Native/Hid.cs' '[LibraryImport("x.dll")]' $false
 Assert-Check 'WinHTTP outside Updates' $bad 'WinHttpOpen(0);' $true
+Assert-Check 'WinHTTP in Updates is allowed' 'CloudStatus/Updates/Other.cs' 'WinHttpOpen(0);' $false
+Assert-Check 'ShellExecute outside the update check' $bad 'ShellExecuteW(0);' $true
+Assert-Check 'CreateProcess anywhere else' 'CloudStatus/Updates/Other.cs' 'CreateProcessW(0);' $true
+Assert-Check 'ShellExecute in the update check is allowed' 'CloudStatus/Ui/Settings/UpdateCheck.cs' 'ShellExecuteW(0);' $false
 Assert-Check 'device access outside Device' $bad 'CreateFileW(0);' $true
 Assert-Check 'device access in Device is allowed' 'CloudStatus/Device/Other.cs' 'CreateFileW(0);' $false
 Assert-Check 'opening a device for writing' 'CloudStatus/Device/Other.cs' 'GENERIC_WRITE' $true

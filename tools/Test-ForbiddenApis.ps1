@@ -39,6 +39,7 @@ $restricted = @(
     @{ Name = 'P/Invoke'; Pattern = '\[(LibraryImport|DllImport)\b'; Allowed = '^CloudStatus/Native/' }
     @{ Name = 'device access'; Pattern = '\bCreateFileW\b'; Allowed = '^CloudStatus/(Native/Kernel32\.cs|Device/)' }
     @{ Name = 'network'; Pattern = '\bWinHttp\w*'; Allowed = '^CloudStatus/(Native/WinHttp\.cs|Updates/)' }
+    @{ Name = 'starting a process'; Pattern = '\bShellExecute\w*|\bCreateProcess\w*|Process\.Start'; Allowed = '^CloudStatus/(Native/Shell32\.cs|Ui/Settings/UpdateCheck\.cs)$' }
 )
 
 $sources = foreach ($folder in 'CloudStatus', 'installer') {
