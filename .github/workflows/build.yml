@@ -1,7 +1,8 @@
 name: Build
 
 # Checks every pull request and every push to main: the code must not use any API that CloudStatus
-# promises never to use, the tests must pass, and the exe must build within its size budget.
+# promises never to use, the tests must pass, the exe must build within its size budget, and the
+# MSI must install and uninstall cleanly on the runner.
 on:
   pull_request:
   push:
@@ -28,11 +29,15 @@ jobs:
         shell: pwsh
         run: ./tools/Test-ForbiddenApis.Tests.ps1
 
+      - name: Check the release notes script
+        shell: pwsh
+        run: ./tools/Get-ReleaseNotes.Tests.ps1
+
       - name: Unit tests
         shell: pwsh
         run: dotnet test tests/CloudStatus.Core.Tests/CloudStatus.Core.Tests.csproj -c Release
 
-      - name: Build exe
+      - name: Build exe and MSI
         shell: pwsh
         run: ./build.ps1 -Version 0.0.0
 
@@ -44,8 +49,14 @@ jobs:
         shell: pwsh
         run: ./tools/Test-Smoke.ps1 -Exe artifacts/CloudStatus-0.0.0-portable.exe
 
+      - name: Install and uninstall the MSI
+        shell: pwsh
+        run: ./tools/Test-Installer.ps1 -Msi artifacts/CloudStatus-0.0.0.msi
+
       - uses: actions/upload-artifact@v7
         with:
           name: CloudStatus-build-${{ github.sha }}
-          path: artifacts/*-portable.exe
+          path: |
+            artifacts/*.msi
+            artifacts/*-portable.exe
           retention-days: 14

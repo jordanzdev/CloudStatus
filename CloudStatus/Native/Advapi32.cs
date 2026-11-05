@@ -31,6 +31,9 @@ internal static unsafe partial class Advapi32
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf16)]
     public static partial int RegDeleteValueW(nint key, string? name);
 
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf16)]
+    public static partial int RegDeleteTreeW(nint key, string? subKey);
+
     [LibraryImport(Lib)]
     public static partial int RegCloseKey(nint key);
 }

@@ -35,4 +35,26 @@ public class StartupCommandTests
     {
         Assert.False(StartupCommand.IsCurrent(registered, Exe));
     }
+
+    // Spec 009, AC-009-04: --uninstall removes the Run entry only if it launches this exe.
+
+    [Theory]
+    [InlineData("\"" + Exe + "\" --startup")]
+    [InlineData("\"" + Exe + "\"")]
+    [InlineData("\"" + Exe + "\" --other")]
+    public void Launches_ThisExeWithAnyArguments(string registered)
+    {
+        Assert.True(StartupCommand.Launches(registered, Exe));
+        Assert.True(StartupCommand.Launches(registered.ToUpperInvariant(), Exe));
+    }
+
+    [Theory]
+    [InlineData(@"""D:\Tools\CloudStatus.exe"" --startup")]
+    [InlineData("\"" + Exe + "2\" --startup")]
+    [InlineData(Exe + " --startup")]
+    [InlineData("")]
+    public void DoesNotLaunch_AnotherExe(string registered)
+    {
+        Assert.False(StartupCommand.Launches(registered, Exe));
+    }
 }

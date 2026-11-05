@@ -13,7 +13,7 @@ spec is not started until the specs it depends on are at least Implemented.
 | [006](006-low-battery-notice.md) | Low-battery notice | 005 | — | Implemented |
 | [007](007-settings.md) | Settings and persistence in HKCU, `--startup` | 005 | — | Implemented |
 | [008](008-suspend-resume.md) | Suspend and resume | 004 | — | Implemented |
-| 009 | MSI installer, release pipeline, `--uninstall`, `--create-desktop-shortcut` | 007 | — | Not started |
+| [009](009-installer-release.md) | MSI installer, release pipeline, `--uninstall`, `--create-desktop-shortcut` | 007 | — | Implemented |
 | 010 | Check for updates | 009 | — | Not started |
 | 011 | Firmware version | 004 | OQ-06, OQ-07 | Not started |
 | 012 | Microphone mute state (optional) | 004 | Capture of `0x05`, see protocol.md section 6 | Not started |

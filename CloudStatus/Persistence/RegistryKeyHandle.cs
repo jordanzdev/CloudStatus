@@ -29,6 +29,13 @@ internal readonly unsafe struct RegistryKeyHandle : IDisposable
         return new RegistryKeyHandle(result == Advapi32.ERROR_SUCCESS ? handle : 0);
     }
 
+    /// <summary>Deletes the key with all its values and subkeys. A missing key counts as deleted.</summary>
+    public static bool DeleteTree(string path)
+    {
+        int result = Advapi32.RegDeleteTreeW(Advapi32.HKEY_CURRENT_USER, path);
+        return result == Advapi32.ERROR_SUCCESS || result == Advapi32.ERROR_FILE_NOT_FOUND;
+    }
+
     public bool TryGetDword(string name, out uint value)
     {
         uint data = 0, type = 0, size = sizeof(uint);

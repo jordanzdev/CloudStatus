@@ -1,0 +1,57 @@
+name: Release
+
+# Pushing a tag such as v1.2.3 builds the native exe and the MSI and publishes a GitHub Release
+# whose notes are the CHANGELOG.md section of that version (the release fails if it is missing).
+# Running it manually only builds and uploads the files as a workflow artifact.
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Resolve version
+        id: version
+        shell: pwsh
+        run: |
+          $version = if ($env:GITHUB_REF_TYPE -eq 'tag') { $env:GITHUB_REF_NAME.TrimStart('v') } else { '0.0.0' }
+          "value=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Release notes from CHANGELOG.md
+        if: github.ref_type == 'tag'
+        shell: pwsh
+        run: ./tools/Get-ReleaseNotes.ps1 -Version ${{ steps.version.outputs.value }} -OutFile "${{ runner.temp }}/RELEASE_NOTES.md"
+
+      - name: Build exe and MSI
+        shell: pwsh
+        run: ./build.ps1 -Version ${{ steps.version.outputs.value }}
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: CloudStatus-${{ steps.version.outputs.value }}
+          path: |
+            artifacts/*.msi
+            artifacts/*-portable.exe
+            artifacts/SHA256SUMS.txt
+
+      - name: Publish release
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v3
+        with:
+          body_path: ${{ runner.temp }}/RELEASE_NOTES.md
+          generate_release_notes: true # appends GitHub's "Full Changelog" link
+          files: |
+            artifacts/*.msi
+            artifacts/*-portable.exe
+            artifacts/SHA256SUMS.txt

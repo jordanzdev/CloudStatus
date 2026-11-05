@@ -25,5 +25,8 @@ GitHub Release.
   opens Settings; started with Windows (`--startup`) it stays in the tray.
 - After the PC sleeps and wakes up, the dongle is opened again and the icon shows the headset
   without replugging anything.
+- A per-user MSI installer in English and Spanish, with no administrator rights needed. Upgrading
+  keeps the settings; uninstalling also removes them, the *Start with Windows* entry and the desktop
+  shortcut. Each release also ships the portable exe and SHA-256 checksums.
 
 [Unreleased]: https://github.com/jordanzdev/CloudStatus/commits/main
