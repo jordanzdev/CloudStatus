@@ -29,4 +29,12 @@ internal static class Strings
         _ => $"CloudStatus: {percent} %",
     };
     public static string MenuExit => Pick("Salir", "Exit");
+
+    // Low-battery notice
+    public static string NoticeTitle(BatteryNotice notice) => notice == BatteryNotice.Critical
+        ? Pick("Batería muy baja", "Battery very low")
+        : Pick("Batería baja", "Low battery");
+    public static string NoticeText(BatteryNotice notice, byte percent) => notice == BatteryNotice.Critical
+        ? Pick($"Cascos al {percent} %. Cárgalos ya.", $"Headset at {percent} %. Charge it now.")
+        : Pick($"Cascos al {percent} %. Cárgalos pronto.", $"Headset at {percent} %. Charge it soon.");
 }

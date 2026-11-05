@@ -29,6 +29,8 @@ internal static class HeadsetLink
 
     public static ChargeState Charge => s_monitor.Charge;
 
+    public static bool IsChargeKnown => s_monitor.IsChargeKnown;
+
     public static void Initialize(nint window)
     {
         s_window = window;

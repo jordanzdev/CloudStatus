@@ -187,4 +187,32 @@ public class HeadsetMonitorTests
         Assert.Equal(HeadsetPower.NoDongle, monitor.Power);
         Assert.Equal(0, monitor.BatteryPercent);
     }
+
+    [Fact]
+    public void ChargeIsKnown_OnlyAfterTheChargingResponse()
+    {
+        HeadsetMonitor monitor = Connected();
+        Assert.False(monitor.IsChargeKnown);
+
+        monitor.OnBattery(40);
+        Assert.False(monitor.IsChargeKnown);
+
+        monitor.OnCharging(ChargeState.Charging);
+        Assert.True(monitor.IsChargeKnown);
+    }
+
+    [Fact]
+    public void ChargeIsKnown_AfterTheChargingQueryTimesOut()
+    {
+        HeadsetMonitor monitor = Connected();
+        monitor.OnBattery(40);
+        monitor.OnTimeout();
+        Assert.True(monitor.IsChargeKnown);
+    }
+
+    [Fact]
+    public void ChargeIsNotKnown_WhileOff()
+    {
+        Assert.False(Off().IsChargeKnown);
+    }
 }

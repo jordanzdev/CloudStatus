@@ -51,6 +51,9 @@ internal struct HeadsetMonitor
 
     public ChargeState Charge { get; private set; }
 
+    /// <summary>False while the charging query that follows power-on has not been answered or timed out.</summary>
+    public readonly bool IsChargeKnown => Power == HeadsetPower.On && _expected != Expected.Charging;
+
     public MonitorAction OnDongleConnected() => StartChecking();
 
     public MonitorAction OnDongleLost()

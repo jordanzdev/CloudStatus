@@ -1,3 +1,4 @@
+using CloudStatus.Core;
 using CloudStatus.Device;
 using CloudStatus.Native;
 using CloudStatus.Ui;
@@ -8,6 +9,7 @@ namespace CloudStatus;
 internal static class App
 {
     static bool s_isShutDown;
+    static LowBatteryAlert s_lowBattery;
 
     public static int Run()
     {
@@ -18,13 +20,21 @@ internal static class App
 
         TrayIcon.Create(MainWindow.Handle);
         HeadsetLink.Initialize(MainWindow.Handle);
-        HeadsetLink.Changed += TrayIcon.Refresh;
+        HeadsetLink.Changed += OnHeadsetChanged;
         DongleWatcher.Changed += OnDongleChanged;
         DongleWatcher.Start(MainWindow.Handle); // after the icon, so a slow search never delays it
         return MessageLoop.Run() ? 0 : 1;
     }
 
     public static void Exit() => MainWindow.Close();
+
+    static void OnHeadsetChanged()
+    {
+        TrayIcon.Refresh();
+        BatteryNotice notice = s_lowBattery.Evaluate(
+            HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge, HeadsetLink.IsChargeKnown);
+        TrayIcon.ShowNotice(notice, HeadsetLink.BatteryPercent);
+    }
 
     static void OnDongleChanged()
     {
