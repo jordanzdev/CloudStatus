@@ -17,6 +17,7 @@ spec is not started until the specs it depends on are at least Implemented.
 | [010](010-check-for-updates.md) | Check for updates | 009 | — | Implemented |
 | 011 | Firmware version | 004 | OQ-06, OQ-07 | Deferred by the maintainer (2026-11-05) |
 | 012 | Microphone mute state (optional) | 004 | Capture of `0x05`, see protocol.md section 6 | Not started |
+| [013](013-ui-redesign.md) | Windows 11 look for the whole interface | 007, 010 | — | Implemented |
 
 Open questions are listed in [protocol.md](../docs/protocol.md#8-open-questions).
 
@@ -42,4 +43,4 @@ Everything after that keeps its order and moves up one number.
 |---|---|
 | 0.1.0 | Through 005: usable from the portable exe |
 | 1.0.0 | Through 010 |
-| 1.x | 011 and 012, when their open questions are resolved |
+| 1.x | 013; 011 and 012 when their open questions are resolved |
