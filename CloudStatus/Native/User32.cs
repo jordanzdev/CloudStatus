@@ -174,7 +174,9 @@ internal static unsafe partial class User32
     public const int IDNO = 7;
     public const uint MB_OK = 0x00000000;
     public const uint MB_YESNOCANCEL = 0x00000003;
+    public const uint MB_YESNO = 0x00000004;
     public const uint MB_ICONQUESTION = 0x00000020;
+    public const uint MB_ICONINFORMATION = 0x00000040;
     public const uint MB_ICONWARNING = 0x00000030;
 
     // Power broadcasts (wParam of WM_POWERBROADCAST)
@@ -210,6 +212,7 @@ internal static unsafe partial class User32
     public const uint IMAGE_ICON = 1;
     public const uint LR_DEFAULTCOLOR = 0;
     public const nint IDC_ARROW = 32512;
+    public const nint IDC_WAIT = 32514;
 
     // Text and system settings
     public const uint DT_CENTER = 0x0001;
@@ -354,6 +357,21 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf16)]
     public static partial int MessageBoxW(nint owner, string text, string caption, uint type);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool UpdateWindow(nint hwnd);
+
+    [LibraryImport(Lib)]
+    public static partial nint SetCursor(nint cursor);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool EnableWindow(nint hwnd, [MarshalAs(UnmanagedType.Bool)] bool enable);
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf16)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetWindowTextW(nint hwnd, string text);
 
     [LibraryImport(Lib)]
     public static partial nint RegisterDeviceNotificationW(nint recipient, void* filter, uint flags);

@@ -28,5 +28,8 @@ GitHub Release.
 - A per-user MSI installer in English and Spanish, with no administrator rights needed. Upgrading
   keeps the settings; uninstalling also removes them, the *Start with Windows* entry and the desktop
   shortcut. Each release also ships the portable exe and SHA-256 checksums.
+- *Check for updates* in Settings: only when clicked, only against GitHub. With the installed app it
+  downloads the new MSI, checks its SHA-256 and starts it; with the portable exe it opens the
+  download page.
 
 [Unreleased]: https://github.com/jordanzdev/CloudStatus/commits/main

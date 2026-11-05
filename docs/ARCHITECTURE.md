@@ -155,7 +155,8 @@ changes. One `HICON` is cached and the previous one destroyed.
 **Decision.** Same flow: only on click, only `github.com`, SHA-256 verified, synchronous WinHTTP on
 the UI thread.
 **Consequences.** The thread blocks for a second or two after a click. That is an explicit user
-action, and D4 keeps I/O correct across it.
+action, and D4 keeps I/O correct across it. Windows' network stack stays loaded after the first
+check, about 1.3 MB; running the check in a separate process was considered and rejected (spec 010).
 
 ### D17. Policy is enforced by a script
 

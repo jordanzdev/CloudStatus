@@ -50,4 +50,9 @@ internal static unsafe partial class Shell32
     [LibraryImport("shell32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool Shell_NotifyIconW(uint message, NOTIFYICONDATAW* data);
+
+    /// <summary>Returns a value greater than 32 on success. Only the update check may call it (spec 010).</summary>
+    [LibraryImport("shell32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    public static partial nint ShellExecuteW(nint owner, string? operation, string file, string? parameters,
+        string? directory, int showCommand);
 }

@@ -149,6 +149,29 @@ internal static unsafe class SettingsWindow
         }
     }
 
+    /// <summary>Shows progress on the button itself while the check blocks the UI thread (spec 010).</summary>
+    static void CheckForUpdates(nint window)
+    {
+        nint button = SettingsControls.Get(window, SettingsControls.CheckForUpdatesId);
+        EnableWindow(button, false);
+        SetCursor(LoadCursorW(0, IDC_WAIT));
+        try
+        {
+            UpdateCheck.Run(window, status =>
+            {
+                SetWindowTextW(button, status);
+                UpdateWindow(button);
+            });
+        }
+        finally
+        {
+            // Harmless if the window is already gone (the update closes the app).
+            SetWindowTextW(button, Strings.ButtonCheckForUpdates);
+            EnableWindow(button, true);
+            SetCursor(LoadCursorW(0, IDC_ARROW));
+        }
+    }
+
     /// <summary>This is not a real dialog, so focus is saved and restored by hand.</summary>
     static bool OnActivate(bool isActive)
     {
@@ -203,6 +226,8 @@ internal static unsafe class SettingsWindow
                     int notification = ((int)wParam >> 16) & 0xFFFF;
                     if (notification == BN_CLICKED && id == SettingsControls.SaveId)
                         Save(window);
+                    else if (notification == BN_CLICKED && id == SettingsControls.CheckForUpdatesId)
+                        CheckForUpdates(window);
                     else if (notification == BN_CLICKED && id == SettingsControls.CancelId)
                         DestroyWindow(window); // Cancel and Esc close without asking
                     return 0;
