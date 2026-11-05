@@ -192,5 +192,8 @@ is an ordinary timeout.
 second one comes from the runtime, not from its code. Which runtime thread it is has not been
 confirmed.
 **Decision.** The budget is **no thread created by our code**, measured as a count of 2 at rest.
-**Consequences.** See [PERFORMANCE.md](PERFORMANCE.md). Any count above 2 at rest is a failure to
-explain.
+Once the settings window has been opened, Windows components it loads (text input, Common
+Controls) leave up to 3 idle workers of the Windows thread pool, which start in `ntdll` and use no
+CPU. They are accepted as well (spec 007).
+**Consequences.** See [PERFORMANCE.md](PERFORMANCE.md). Any count above 2 at rest before Settings is
+opened, or any extra thread that starts in `CloudStatus.exe` or uses CPU, is a failure to explain.

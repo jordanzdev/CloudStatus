@@ -40,6 +40,8 @@ internal static unsafe partial class Shell32
     public const uint NIIF_RESPECT_QUIET_TIME = 0x80;
 
     public const uint NOTIFYICON_VERSION_4 = 4;
+    public const uint NIN_SELECT = User32.WM_USER + 0;
+    public const uint NIN_KEYSELECT = NIN_SELECT | 0x1;
 
     public const int TooltipCapacity = 128;
     public const int InfoCapacity = 256;

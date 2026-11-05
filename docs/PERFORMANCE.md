@@ -8,7 +8,7 @@ which ones it affects, and a change that exceeds one needs an approved spec chan
 | Metric | Budget | Checked by |
 |---|---|---|
 | CPU at rest, between queries | 0 %: the thread sleeps in the wait | WPA |
-| Threads | None created by our code: **2 at rest**, the UI thread and one from the runtime ([D20](ARCHITECTURE.md#d20-runtime-threads-are-accepted)) | `Get-Process`, CI grep for thread APIs |
+| Threads | None created by our code: **2 at rest**, the UI thread and one from the runtime; after Settings has been opened, up to 3 more idle Windows thread-pool workers ([D20](ARCHITECTURE.md#d20-runtime-threads-are-accepted)) | `Get-Process`, CI grep for thread APIs |
 | Private memory, steady state | ≤ 5 MB | `Get-Process` |
 | Exe size | ≤ 1.5 MB | **CI fails above it** |
 | HID command, write to response | ≤ 100 ms typical, 500 ms hard timeout | Spec 003 logging |

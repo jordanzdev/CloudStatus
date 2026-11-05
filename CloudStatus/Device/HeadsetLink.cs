@@ -13,10 +13,10 @@ internal static class HeadsetLink
     public const nuint PollTimerId = 4;
 
     const uint DeadlineMs = 500;
-    const uint PollIntervalMs = 5 * 60 * 1000;
     const uint PollToleranceMs = 30 * 1000; // lets Windows group the wake-up with others
 
     static nint s_window;
+    static bool s_isPolling;
     static HeadsetMonitor s_monitor;
     static CommandTracker s_tracker;
 
@@ -94,9 +94,12 @@ internal static class HeadsetLink
     static void Apply(MonitorAction action)
     {
         if ((action & MonitorAction.StartPolling) != 0)
-            SetCoalescableTimer(s_window, PollTimerId, PollIntervalMs, 0, PollToleranceMs);
+            StartPollTimer();
         if ((action & MonitorAction.StopPolling) != 0)
+        {
             KillTimer(s_window, PollTimerId);
+            s_isPolling = false;
+        }
 
         if ((action & MonitorAction.QueryBattery) != 0)
             Send(Commands.QueryBattery, HpReports.BatteryCommand);
@@ -119,4 +122,21 @@ internal static class HeadsetLink
     }
 
     static void StopDeadline() => KillTimer(s_window, DeadlineTimerId);
+
+    /// <summary>
+    /// The polling interval changed (spec 007): a running timer restarts with it. Nothing is sent
+    /// because of the change.
+    /// </summary>
+    public static void OnPollIntervalChanged()
+    {
+        if (s_isPolling)
+            StartPollTimer();
+    }
+
+    /// <summary>Replaces the timer if it already exists, so the next poll is one full interval away.</summary>
+    static void StartPollTimer()
+    {
+        SetCoalescableTimer(s_window, PollTimerId, Config.Current.PollIntervalMs, 0, PollToleranceMs);
+        s_isPolling = true;
+    }
 }

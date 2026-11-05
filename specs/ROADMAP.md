@@ -11,7 +11,7 @@ spec is not started until the specs it depends on are at least Implemented.
 | [004](004-status-query.md) | Status query: battery, charging, on/off, push events | 003 | — | Implemented |
 | [005](005-tray-icon.md) | Tray icon with percentage and colors, tooltip | 004 | — | Implemented |
 | [006](006-low-battery-notice.md) | Low-battery notice | 005 | — | Implemented |
-| 007 | Settings and persistence in HKCU, `--startup` | 005 | — | Not started |
+| [007](007-settings.md) | Settings and persistence in HKCU, `--startup` | 005 | — | Implemented |
 | 008 | Suspend and resume | 004 | — | Not started |
 | 009 | MSI installer, release pipeline, `--uninstall`, `--create-desktop-shortcut` | 007 | — | Not started |
 | 010 | Check for updates | 009 | — | Not started |

@@ -16,6 +16,18 @@ internal struct RECT
     public int Top;
     public int Right;
     public int Bottom;
+
+    public readonly int Width => Right - Left;
+    public readonly int Height => Bottom - Top;
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal struct MONITORINFO
+{
+    public uint cbSize;
+    public RECT rcMonitor;
+    public RECT rcWork;
+    public uint dwFlags;
 }
 
 [StructLayout(LayoutKind.Sequential)]
@@ -95,18 +107,74 @@ internal static unsafe partial class User32
     // Window messages
     public const uint WM_NULL = 0x0000;
     public const uint WM_DESTROY = 0x0002;
+    public const uint WM_ACTIVATE = 0x0006;
     public const uint WM_CLOSE = 0x0010;
     public const uint WM_QUIT = 0x0012;
     public const uint WM_ENDSESSION = 0x0016;
+    public const uint WM_SETFONT = 0x0030;
     public const uint WM_CONTEXTMENU = 0x007B;
+    public const uint WM_SETICON = 0x0080;
+    public const uint WM_NCDESTROY = 0x0082;
+    public const uint WM_COMMAND = 0x0111;
     public const uint WM_TIMER = 0x0113;
+    public const uint WM_LBUTTONDBLCLK = 0x0203;
     public const uint WM_DEVICECHANGE = 0x0219;
     public const uint WM_DPICHANGED = 0x02E0;
+    public const uint WM_USER = 0x0400;
     public const uint WM_APP = 0x8000;
+    public const int WA_INACTIVE = 0;
 
     // Window styles
     public const uint WS_OVERLAPPED = 0x00000000;
+    public const uint WS_CHILD = 0x40000000;
+    public const uint WS_VISIBLE = 0x10000000;
+    public const uint WS_CAPTION = 0x00C00000;
+    public const uint WS_VSCROLL = 0x00200000;
+    public const uint WS_SYSMENU = 0x00080000;
+    public const uint WS_TABSTOP = 0x00010000;
+    public const uint WS_EX_DLGMODALFRAME = 0x00000001;
     public const uint WS_EX_TOOLWINDOW = 0x00000080;
+    public const uint WS_EX_CLIENTEDGE = 0x00000200;
+    public const uint WS_EX_CONTROLPARENT = 0x00010000;
+    public const int CW_USEDEFAULT = unchecked((int)0x80000000);
+    public const int COLOR_BTNFACE = 15;
+
+    // Window placement
+    public const int SW_SHOWNORMAL = 1;
+    public const uint SWP_NOZORDER = 0x0004;
+    public const uint SWP_NOACTIVATE = 0x0010;
+    public const uint MONITOR_DEFAULTTONEAREST = 2;
+
+    // Controls
+    public const uint SS_LEFT = 0x0000;
+    public const uint BS_PUSHBUTTON = 0x0000;
+    public const uint BS_DEFPUSHBUTTON = 0x0001;
+    public const uint BS_AUTOCHECKBOX = 0x0003;
+    public const uint ES_AUTOHSCROLL = 0x0080;
+    public const uint ES_NUMBER = 0x2000;
+    public const uint CBS_DROPDOWNLIST = 0x0003;
+    public const uint BM_GETCHECK = 0x00F0;
+    public const uint BM_SETCHECK = 0x00F1;
+    public const nint BST_UNCHECKED = 0;
+    public const nint BST_CHECKED = 1;
+    public const int BN_CLICKED = 0;
+    public const uint CB_ADDSTRING = 0x0143;
+    public const uint CB_GETCURSEL = 0x0147;
+    public const uint CB_SETCURSEL = 0x014E;
+    public const uint EM_SETSEL = 0x00B1;
+    public const uint EM_SETLIMITTEXT = 0x00C5;
+
+    // Dialog navigation and message boxes
+    public const uint DM_GETDEFID = WM_USER + 0;
+    public const int DC_HASDEFID = 0x534B;
+    public const int IDOK = 1;
+    public const int IDCANCEL = 2;
+    public const int IDYES = 6;
+    public const int IDNO = 7;
+    public const uint MB_OK = 0x00000000;
+    public const uint MB_YESNOCANCEL = 0x00000003;
+    public const uint MB_ICONQUESTION = 0x00000020;
+    public const uint MB_ICONWARNING = 0x00000030;
 
     // Device notifications
     public const nint DBT_DEVICEARRIVAL = 0x8000;
@@ -123,12 +191,16 @@ internal static unsafe partial class User32
 
     // Menus
     public const uint MF_STRING = 0x0000;
+    public const uint MF_SEPARATOR = 0x0800;
     public const uint TPM_RIGHTBUTTON = 0x0002;
     public const uint TPM_NONOTIFY = 0x0080;
     public const uint TPM_RETURNCMD = 0x0100;
 
     // Icons and cursors
+    public const int SM_CXICON = 11;
     public const int SM_CXSMICON = 49;
+    public const nint ICON_SMALL = 0;
+    public const nint ICON_BIG = 1;
     public const uint IMAGE_ICON = 1;
     public const uint LR_DEFAULTCOLOR = 0;
     public const nint IDC_ARROW = 32512;
@@ -235,6 +307,47 @@ internal static unsafe partial class User32
     [LibraryImport(Lib)]
     [return: MarshalAs(UnmanagedType.Bool)]
     public static partial bool SystemParametersInfoForDpi(uint action, uint param, void* data, uint winIni, uint dpi);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool ShowWindow(nint hwnd, int command);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetWindowPos(nint hwnd, nint insertAfter, int x, int y, int cx, int cy, uint flags);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool AdjustWindowRectExForDpi(RECT* rect, uint style, [MarshalAs(UnmanagedType.Bool)] bool menu, uint exStyle, uint dpi);
+
+    [LibraryImport(Lib)]
+    public static partial nint MonitorFromWindow(nint hwnd, uint flags);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetMonitorInfoW(nint monitor, MONITORINFO* info);
+
+    [LibraryImport(Lib)]
+    public static partial nint SetFocus(nint hwnd);
+
+    [LibraryImport(Lib)]
+    public static partial nint GetFocus();
+
+    [LibraryImport(Lib)]
+    public static partial nint GetDlgItem(nint parent, int id);
+
+    [LibraryImport(Lib)]
+    public static partial uint GetDlgItemInt(nint parent, int id, int* translated, [MarshalAs(UnmanagedType.Bool)] bool signed);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetDlgItemInt(nint parent, int id, uint value, [MarshalAs(UnmanagedType.Bool)] bool signed);
+
+    [LibraryImport(Lib)]
+    public static partial nint SendMessageW(nint hwnd, uint msg, nint wParam, nint lParam);
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf16)]
+    public static partial int MessageBoxW(nint owner, string text, string caption, uint type);
 
     [LibraryImport(Lib)]
     public static partial nint RegisterDeviceNotificationW(nint recipient, void* filter, uint flags);

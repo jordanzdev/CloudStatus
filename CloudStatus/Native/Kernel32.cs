@@ -70,4 +70,7 @@ internal static unsafe partial class Kernel32
 
     [LibraryImport(Lib)]
     public static partial ushort GetUserDefaultUILanguage();
+
+    [LibraryImport(Lib)]
+    public static partial int MulDiv(int number, int numerator, int denominator);
 }

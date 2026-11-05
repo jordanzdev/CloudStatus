@@ -1,3 +1,5 @@
+using CloudStatus.Core;
+
 namespace CloudStatus;
 
 internal static class Program
@@ -5,7 +7,7 @@ internal static class Program
     const string InstanceMutexName = @"Local\CloudStatus";
 
     [STAThread]
-    static int Main()
+    static int Main(string[] args)
     {
         using SingleInstance instance = SingleInstance.TryAcquire(InstanceMutexName);
         if (!instance.IsAcquired)
@@ -13,7 +15,9 @@ internal static class Program
 
         try
         {
-            return App.Run();
+            // Started at sign-in it stays in the tray; started by hand it shows Settings.
+            bool startedWithWindows = args is [StartupCommand.Argument];
+            return App.Run(showSettings: !startedWithWindows);
         }
         finally
         {

@@ -8,7 +8,7 @@ public class IconDescriptionTests
     const uint Teal = 0x26C6A6, Dark = 0x2B313D, Amber = 0xF9A825, Red = 0xE53935, Grey = 0x6B7280;
 
     static IconDescription On(byte percent, ChargeState charge = ChargeState.NotCharging) =>
-        IconDescription.Describe(HeadsetPower.On, percent, charge);
+        IconDescription.Describe(HeadsetPower.On, percent, charge, IconDescription.DefaultLowLimit);
 
     [Theory]
     [InlineData(0, Red)]
@@ -49,7 +49,7 @@ public class IconDescriptionTests
     [InlineData(HeadsetPower.NoDongle, Grey, true)]
     internal void OtherStates_ShowNoNumber(HeadsetPower power, uint background, bool isHollow)
     {
-        IconDescription description = IconDescription.Describe(power, 87, ChargeState.NotCharging);
+        IconDescription description = IconDescription.Describe(power, 87, ChargeState.NotCharging, IconDescription.DefaultLowLimit);
 
         Assert.Equal(IconDescription.NoNumber, description.Number);
         Assert.Equal(background, description.Background);
@@ -87,5 +87,13 @@ public class IconDescriptionTests
     {
         Assert.Equal(On(87), On(87));
         Assert.NotEqual(On(87), On(86));
+    }
+
+    [Theory]
+    [InlineData(29, Red)]
+    [InlineData(30, Amber)]
+    public void ConfiguredLowLimit_MovesTheRedBoundary(int percent, uint background) // AC-007-04
+    {
+        Assert.Equal(background, IconDescription.Describe(HeadsetPower.On, (byte)percent, ChargeState.NotCharging, 30).Background);
     }
 }

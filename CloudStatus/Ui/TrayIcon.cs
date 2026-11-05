@@ -10,6 +10,7 @@ internal enum TrayEvent
 {
     None,
     ContextMenuRequested,
+    Activated,
 }
 
 /// <summary>Notification-area icon: the headset status, drawn in memory, and a tooltip.</summary>
@@ -55,7 +56,12 @@ internal static unsafe class TrayIcon
             X = (short)((long)wParam & 0xFFFF),
             Y = (short)(((long)wParam >> 16) & 0xFFFF),
         };
-        return ((uint)lParam & 0xFFFF) == WM_CONTEXTMENU ? TrayEvent.ContextMenuRequested : TrayEvent.None;
+        return ((uint)lParam & 0xFFFF) switch
+        {
+            WM_CONTEXTMENU => TrayEvent.ContextMenuRequested,
+            WM_LBUTTONDBLCLK or NIN_KEYSELECT => TrayEvent.Activated,
+            _ => TrayEvent.None,
+        };
     }
 
     /// <summary>Explorer restarted: the previous icon no longer exists.</summary>
@@ -73,6 +79,13 @@ internal static unsafe class TrayIcon
     {
         s_dpi = dpi;
         Show(Redraw());
+    }
+
+    /// <summary>A new language or low battery limit: the tooltip and maybe the icon change (spec 007).</summary>
+    public static void OnSettingsChanged()
+    {
+        s_shownState = CurrentState;
+        Show(CurrentIcon() != s_shownIcon ? Redraw() : 0);
     }
 
     /// <summary>Shows the current state. Allocation-free unless it changed.</summary>
@@ -186,7 +199,7 @@ internal static unsafe class TrayIcon
     }
 
     static IconDescription CurrentIcon() =>
-        IconDescription.Describe(HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge);
+        IconDescription.Describe(HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge, Config.Current.LowBatteryPercent);
 
     static void DestroyIfLoaded(ref nint icon)
     {
