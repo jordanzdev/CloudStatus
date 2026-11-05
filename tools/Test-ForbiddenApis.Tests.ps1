@@ -58,6 +58,9 @@ Assert-Check 'network' $bad 'new HttpClient();' $true
 Assert-Check 'NuGet package' 'CloudStatus/Injected.csproj' '<PackageReference Include="X" />' $true
 Assert-Check 'WriteFile outside the transport' $bad 'WriteFile(0);' $true
 Assert-Check 'WriteFile in the transport is allowed' 'CloudStatus/Device/HidTransport.cs' 'WriteFile(0);' $false
+Assert-Check 'GetProcAddress outside UxTheme' 'CloudStatus/Native/Kernel32.cs' 'GetProcAddress(module, 135);' $true
+Assert-Check 'ordinal entry point outside UxTheme' $bad '[LibraryImport("uxtheme.dll", EntryPoint = "#135")]' $true
+Assert-Check 'GetProcAddress in UxTheme is allowed' 'CloudStatus/Native/UxTheme.cs' 'GetProcAddress(module, 135);' $false
 Assert-Check 'P/Invoke outside Native' $bad '[LibraryImport("x.dll")]' $true
 Assert-Check 'P/Invoke in Native is allowed' 'CloudStatus/Native/Hid.cs' '[LibraryImport("x.dll")]' $false
 Assert-Check 'WinHTTP outside Updates' $bad 'WinHttpOpen(0);' $true

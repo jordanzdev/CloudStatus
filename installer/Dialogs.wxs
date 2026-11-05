@@ -43,7 +43,7 @@
       <UIRef Id="CloudStatusTexts" />
 
       <TextStyle Id="NormalFont" FaceName="Segoe UI" Size="9" />
-      <TextStyle Id="TitleFont" FaceName="Segoe UI" Size="13" />
+      <TextStyle Id="TitleFont" FaceName="Segoe UI Semibold" Size="13" />
 
       <!--
         1. Install: language and options. The page switches language as soon as a radio button

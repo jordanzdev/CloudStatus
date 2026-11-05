@@ -36,7 +36,9 @@ internal static unsafe partial class Shell32
     public const uint NIF_SHOWTIP = 0x80; // NOTIFYICON_VERSION_4 hides the standard tooltip without it
 
     public const uint NIIF_WARNING = 0x2;
+    public const uint NIIF_USER = 0x4;
     public const uint NIIF_NOSOUND = 0x10;
+    public const uint NIIF_LARGE_ICON = 0x20;
     public const uint NIIF_RESPECT_QUIET_TIME = 0x80;
 
     public const uint NOTIFYICON_VERSION_4 = 4;

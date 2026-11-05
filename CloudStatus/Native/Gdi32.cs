@@ -51,7 +51,9 @@ internal static unsafe partial class Gdi32
     public const uint BI_RGB = 0;
     public const uint DIB_RGB_COLORS = 0;
     public const int TRANSPARENT = 1;
+    public const int FW_SEMIBOLD = 600;
     public const int FW_BOLD = 700;
+    public const uint SRCCOPY = 0x00CC0020;
     public const byte ANTIALIASED_QUALITY = 4;
 
     [LibraryImport(Lib)]
@@ -79,6 +81,16 @@ internal static unsafe partial class Gdi32
 
     [LibraryImport(Lib)]
     public static partial uint SetTextColor(nint hdc, uint color);
+
+    [LibraryImport(Lib)]
+    public static partial uint SetBkColor(nint hdc, uint color);
+
+    [LibraryImport(Lib)]
+    public static partial nint CreateSolidBrush(uint color);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool BitBlt(nint destination, int x, int y, int width, int height, nint source, int sourceX, int sourceY, uint rop);
 
     [LibraryImport(Lib)]
     public static partial int SetBkMode(nint hdc, int mode);

@@ -67,6 +67,12 @@ internal static class MainWindow
                 TrayIcon.OnDpiChanged((uint)wParam & 0xFFFF);
                 return true;
 
+            case WM_SETTINGCHANGE:
+            case WM_SYSCOLORCHANGE:
+                if (SystemTheme.MayHaveChanged(message, wParam, lParam))
+                    App.OnThemeMayHaveChanged();
+                return false; // a broadcast: DefWindowProc still sees it
+
             case WM_ENDSESSION:
                 // Session end or an installer closing the app through the Restart Manager.
                 if (wParam != 0)

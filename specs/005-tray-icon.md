@@ -120,3 +120,5 @@ None block this spec.
 - 2026-10-31: Draft.
 - 2026-10-31: Approved.
 - 2026-10-31: Implemented, `[hw]` criteria pending.
+- 2026-11-05: REQ-005-03, REQ-005-06 and REQ-005-13, and the non-goal on the Windows theme, replaced by
+  [spec 013](013-ui-redesign.md#changes-to-earlier-specs).

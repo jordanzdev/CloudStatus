@@ -62,6 +62,25 @@ internal struct NONCLIENTMETRICSW
 }
 
 [StructLayout(LayoutKind.Sequential)]
+internal unsafe struct PAINTSTRUCT
+{
+    public nint hdc;
+    public int fErase;
+    public RECT rcPaint;
+    public int fRestore;
+    public int fIncUpdate;
+    public fixed byte rgbReserved[32];
+}
+
+[StructLayout(LayoutKind.Sequential)]
+internal unsafe struct HIGHCONTRASTW
+{
+    public uint cbSize;
+    public uint dwFlags;
+    public char* lpszDefaultScheme;
+}
+
+[StructLayout(LayoutKind.Sequential)]
 internal struct MSG
 {
     public nint hwnd;
@@ -108,14 +127,26 @@ internal static unsafe partial class User32
     public const uint WM_NULL = 0x0000;
     public const uint WM_DESTROY = 0x0002;
     public const uint WM_ACTIVATE = 0x0006;
+    public const uint WM_PAINT = 0x000F;
     public const uint WM_CLOSE = 0x0010;
+    public const uint WM_ERASEBKGND = 0x0014;
+    public const uint WM_SYSCOLORCHANGE = 0x0015;
+    public const uint WM_SETTINGCHANGE = 0x001A;
     public const uint WM_QUIT = 0x0012;
     public const uint WM_ENDSESSION = 0x0016;
     public const uint WM_SETFONT = 0x0030;
+    public const uint WM_GETFONT = 0x0031;
+    public const uint WM_NOTIFY = 0x004E;
     public const uint WM_CONTEXTMENU = 0x007B;
     public const uint WM_SETICON = 0x0080;
     public const uint WM_NCDESTROY = 0x0082;
     public const uint WM_COMMAND = 0x0111;
+    public const uint WM_CTLCOLOREDIT = 0x0133;
+    public const uint WM_CTLCOLORLISTBOX = 0x0134;
+    public const uint WM_CTLCOLORBTN = 0x0135;
+    public const uint WM_CTLCOLORSTATIC = 0x0138;
+    public const uint WM_QUERYUISTATE = 0x0129;
+    public const nint UISF_HIDEFOCUS = 0x1;
     public const uint WM_TIMER = 0x0113;
     public const uint WM_LBUTTONDBLCLK = 0x0203;
     public const uint WM_POWERBROADCAST = 0x0218;
@@ -129,6 +160,7 @@ internal static unsafe partial class User32
     public const uint WS_OVERLAPPED = 0x00000000;
     public const uint WS_CHILD = 0x40000000;
     public const uint WS_VISIBLE = 0x10000000;
+    public const uint WS_CLIPCHILDREN = 0x02000000;
     public const uint WS_CAPTION = 0x00C00000;
     public const uint WS_VSCROLL = 0x00200000;
     public const uint WS_SYSMENU = 0x00080000;
@@ -138,9 +170,15 @@ internal static unsafe partial class User32
     public const uint WS_EX_CLIENTEDGE = 0x00000200;
     public const uint WS_EX_CONTROLPARENT = 0x00010000;
     public const int CW_USEDEFAULT = unchecked((int)0x80000000);
+    public const int COLOR_WINDOW = 5;
+    public const int COLOR_WINDOWTEXT = 8;
+    public const int COLOR_HIGHLIGHT = 13;
+    public const int COLOR_HIGHLIGHTTEXT = 14;
     public const int COLOR_BTNFACE = 15;
+    public const int COLOR_GRAYTEXT = 17;
 
     // Window placement
+    public const int SW_HIDE = 0;
     public const int SW_SHOWNORMAL = 1;
     public const uint SWP_NOZORDER = 0x0004;
     public const uint SWP_NOACTIVATE = 0x0010;
@@ -148,9 +186,11 @@ internal static unsafe partial class User32
 
     // Controls
     public const uint SS_LEFT = 0x0000;
+    public const uint SS_NOPREFIX = 0x0080;
     public const uint BS_PUSHBUTTON = 0x0000;
     public const uint BS_DEFPUSHBUTTON = 0x0001;
     public const uint BS_AUTOCHECKBOX = 0x0003;
+    public const uint ES_CENTER = 0x0001;
     public const uint ES_AUTOHSCROLL = 0x0080;
     public const uint ES_NUMBER = 0x2000;
     public const uint CBS_DROPDOWNLIST = 0x0003;
@@ -162,6 +202,9 @@ internal static unsafe partial class User32
     public const uint CB_ADDSTRING = 0x0143;
     public const uint CB_GETCURSEL = 0x0147;
     public const uint CB_SETCURSEL = 0x014E;
+    public const int EN_SETFOCUS = 0x0100;
+    public const int EN_KILLFOCUS = 0x0200;
+    public const int EN_CHANGE = 0x0300;
     public const uint EM_SETSEL = 0x00B1;
     public const uint EM_SETLIMITTEXT = 0x00C5;
 
@@ -199,6 +242,7 @@ internal static unsafe partial class User32
 
     // Menus
     public const uint MF_STRING = 0x0000;
+    public const uint MF_GRAYED = 0x0001;
     public const uint MF_SEPARATOR = 0x0800;
     public const uint TPM_RIGHTBUTTON = 0x0002;
     public const uint TPM_NONOTIFY = 0x0080;
@@ -215,11 +259,23 @@ internal static unsafe partial class User32
     public const nint IDC_WAIT = 32514;
 
     // Text and system settings
+    public const uint DT_LEFT = 0x0000;
     public const uint DT_CENTER = 0x0001;
     public const uint DT_VCENTER = 0x0004;
+    public const uint DT_WORDBREAK = 0x0010;
     public const uint DT_SINGLELINE = 0x0020;
+    public const uint DT_CALCRECT = 0x0400;
     public const uint DT_NOPREFIX = 0x0800;
     public const uint SPI_GETNONCLIENTMETRICS = 0x0029;
+    public const uint SPI_GETHIGHCONTRAST = 0x0042;
+    public const uint SPI_SETHIGHCONTRAST = 0x0043;
+    public const uint HCF_HIGHCONTRASTON = 0x00000001;
+
+    // Painting
+    public const uint RDW_INVALIDATE = 0x0001;
+    public const uint RDW_ERASE = 0x0004;
+    public const uint RDW_ALLCHILDREN = 0x0080;
+    public const uint RDW_FRAME = 0x0400;
 
     [LibraryImport(Lib)]
     public static partial ushort RegisterClassExW(WNDCLASSEXW* windowClass);
@@ -292,6 +348,10 @@ internal static unsafe partial class User32
     public static partial bool DestroyMenu(nint menu);
 
     [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SetMenuDefaultItem(nint menu, uint item, uint byPosition);
+
+    [LibraryImport(Lib)]
     public static partial uint GetDpiForWindow(nint hwnd);
 
     [LibraryImport(Lib)]
@@ -312,6 +372,48 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf16)]
     public static partial int DrawTextW(nint hdc, string text, int count, RECT* rect, uint format);
+
+    [LibraryImport(Lib)]
+    public static partial int DrawTextW(nint hdc, char* text, int count, RECT* rect, uint format);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool SystemParametersInfoW(uint action, uint param, void* data, uint winIni);
+
+    [LibraryImport(Lib)]
+    public static partial uint GetSysColor(int index);
+
+    [LibraryImport(Lib)]
+    public static partial nint BeginPaint(nint hwnd, PAINTSTRUCT* paint);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool EndPaint(nint hwnd, PAINTSTRUCT* paint);
+
+    [LibraryImport(Lib)]
+    public static partial nint GetDC(nint hwnd);
+
+    [LibraryImport(Lib)]
+    public static partial int ReleaseDC(nint hwnd, nint hdc);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool InvalidateRect(nint hwnd, RECT* rect, [MarshalAs(UnmanagedType.Bool)] bool erase);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool RedrawWindow(nint hwnd, RECT* rect, nint region, uint flags);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetClientRect(nint hwnd, RECT* rect);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool GetWindowRect(nint hwnd, RECT* rect);
+
+    [LibraryImport(Lib)]
+    public static partial int GetWindowTextW(nint hwnd, char* text, int capacity);
 
     [LibraryImport(Lib)]
     [return: MarshalAs(UnmanagedType.Bool)]
@@ -344,6 +446,9 @@ internal static unsafe partial class User32
 
     [LibraryImport(Lib)]
     public static partial nint GetDlgItem(nint parent, int id);
+
+    [LibraryImport(Lib)]
+    public static partial int GetDlgCtrlID(nint hwnd);
 
     [LibraryImport(Lib)]
     public static partial uint GetDlgItemInt(nint parent, int id, int* translated, [MarshalAs(UnmanagedType.Bool)] bool signed);

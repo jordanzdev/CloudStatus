@@ -186,3 +186,5 @@ None block this spec.
 - 2026-11-05: Amended and approved: the first opening has a one-time cost and Windows thread-pool
   workers are accepted after it (AC-007-21, budget table, D20).
 - 2026-11-05: Implemented, `[hw]` criteria pending.
+- 2026-11-05: REQ-007-07, REQ-007-10 and REQ-007-11 (look, errors) replaced by
+  [spec 013](013-ui-redesign.md#changes-to-earlier-specs).

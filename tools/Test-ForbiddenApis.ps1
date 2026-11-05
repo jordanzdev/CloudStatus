@@ -39,6 +39,8 @@ $restricted = @(
     @{ Name = 'P/Invoke'; Pattern = '\[(LibraryImport|DllImport)\b'; Allowed = '^CloudStatus/Native/' }
     @{ Name = 'device access'; Pattern = '\bCreateFileW\b'; Allowed = '^CloudStatus/(Native/Kernel32\.cs|Device/)' }
     @{ Name = 'network'; Pattern = '\bWinHttp\w*'; Allowed = '^CloudStatus/(Native/WinHttp\.cs|Updates/)' }
+    # D21: the dark menu's undocumented uxtheme exports, looked up by ordinal in one file only.
+    @{ Name = 'export by ordinal'; Pattern = '\bGetProcAddress\b|EntryPoint\s*=\s*"#'; Allowed = '^CloudStatus/Native/UxTheme\.cs$' }
     @{ Name = 'starting a process'; Pattern = '\bShellExecute\w*|\bCreateProcess\w*|Process\.Start'; Allowed = '^CloudStatus/(Native/Shell32\.cs|Ui/Settings/UpdateCheck\.cs)$' }
 )
 

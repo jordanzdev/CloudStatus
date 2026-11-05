@@ -29,6 +29,7 @@ internal static class App
         StartupRegistration.Initialize();
         InstallRegistration.Initialize();
         Strings.Apply(Config.Current.Language);
+        SystemTheme.Load(); // Windows' theme: two registry values (spec 013)
 
         if (!MainWindow.Create())
             return 1;
@@ -102,6 +103,15 @@ internal static class App
         TrayIcon.Refresh();
     }
 
+    /// <summary>Windows announced a theme or high-contrast change; the hidden window receives it.</summary>
+    public static void OnThemeMayHaveChanged()
+    {
+        if (!SystemTheme.Refresh())
+            return;
+        TrayIcon.OnThemeChanged();
+        SettingsWindow.OnThemeChanged();
+    }
+
     public static void OnTrayEvent(TrayEvent trayEvent, POINT anchor)
     {
         switch (trayEvent)
@@ -111,7 +121,7 @@ internal static class App
                 break;
 
             case TrayEvent.ContextMenuRequested:
-                switch (TrayMenu.Show(MainWindow.Handle, anchor))
+                switch (TrayMenu.Show(MainWindow.Handle, anchor, TrayIcon.CurrentStatusLine()))
                 {
                     case TrayCommand.Settings:
                         SettingsWindow.Show();

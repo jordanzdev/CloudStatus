@@ -81,6 +81,9 @@ internal static unsafe class TrayIcon
         Show(Redraw());
     }
 
+    /// <summary>The taskbar theme or high contrast changed: the icon's colors follow (spec 013).</summary>
+    public static void OnThemeChanged() => Show(CurrentIcon() != s_shownIcon ? Redraw() : 0);
+
     /// <summary>A new language or low battery limit: the tooltip and maybe the icon change (spec 007).</summary>
     public static void OnSettingsChanged()
     {
@@ -102,6 +105,8 @@ internal static unsafe class TrayIcon
     /// <summary>
     /// Shows a silent low-battery notice (spec 006), or keeps the latest one until the icon can be
     /// added. Windows decides when it appears: Do Not Disturb sends it to the notification center.
+    /// The notice shows the icon's own plate at large size (spec 013), or the warning icon if it
+    /// cannot be drawn.
     /// </summary>
     public static void ShowNotice(BatteryNotice notice, byte percent)
     {
@@ -115,12 +120,15 @@ internal static unsafe class TrayIcon
         }
         s_pendingNotice = BatteryNotice.None;
 
+        nint largeIcon = StatusIcon.Create(CurrentIcon(), GetSystemMetricsForDpi(SM_CXICON, s_dpi));
         NOTIFYICONDATAW data = CreateBaseData();
         data.uFlags = NIF_INFO;
-        data.dwInfoFlags = NIIF_WARNING | NIIF_NOSOUND | NIIF_RESPECT_QUIET_TIME;
+        data.dwInfoFlags = (largeIcon != 0 ? NIIF_USER | NIIF_LARGE_ICON : NIIF_WARNING) | NIIF_NOSOUND | NIIF_RESPECT_QUIET_TIME;
+        data.hBalloonIcon = largeIcon;
         CopyText(Strings.NoticeText(notice, percent), data.szInfo, InfoCapacity);
         CopyText(Strings.NoticeTitle(notice), data.szInfoTitle, InfoTitleCapacity);
         Shell_NotifyIconW(NIM_MODIFY, &data);
+        DestroyIfLoaded(ref largeIcon); // the shell has its own copy once the call returns
     }
 
     /// <summary>The previous icon is destroyed only once the shell has the new one.</summary>
@@ -199,7 +207,8 @@ internal static unsafe class TrayIcon
     }
 
     static IconDescription CurrentIcon() =>
-        IconDescription.Describe(HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge, Config.Current.LowBatteryPercent);
+        IconDescription.Describe(HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge, Config.Current.LowBatteryPercent,
+            SystemTheme.Current);
 
     static void DestroyIfLoaded(ref nint icon)
     {
@@ -225,13 +234,10 @@ internal static unsafe class TrayIcon
         return data;
     }
 
-    static string CurrentTooltip() => HeadsetLink.Power switch
-    {
-        HeadsetPower.On => Strings.TooltipBattery(HeadsetLink.BatteryPercent, HeadsetLink.Charge),
-        HeadsetPower.Off => Strings.TooltipHeadsetOff,
-        HeadsetPower.Checking => Strings.TooltipDongleConnected,
-        _ => Strings.TooltipNoDongle,
-    };
+    static string CurrentTooltip() => Strings.Tooltip(HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge);
+
+    /// <summary>The second line of the tooltip, shown at the top of the menu.</summary>
+    public static string CurrentStatusLine() => Strings.StatusLine(HeadsetLink.Power, HeadsetLink.BatteryPercent, HeadsetLink.Charge);
 
     static void CopyText(string text, char* destination, int capacity)
     {

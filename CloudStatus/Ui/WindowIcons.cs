@@ -13,6 +13,9 @@ internal struct WindowIcons
     nint _small;
     nint _big;
 
+    /// <summary>The large logo, also shown by the close question (spec 013). Owned by this struct.</summary>
+    public readonly nint Big => _big;
+
     public void Apply(nint window, uint dpi)
     {
         nint previousSmall = _small, previousBig = _big;

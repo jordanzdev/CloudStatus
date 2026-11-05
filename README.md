@@ -34,22 +34,26 @@ closes it automatically.
 
 | Action | How |
 |---|---|
-| Battery at a glance | The tray icon shows the percentage; hover for the details |
+| Battery at a glance | The tray icon shows the percentage; hover or open the menu for the details |
 | Settings | Double-click the tray icon, press Enter on it, or menu → **Settings…** |
 | Exit | Menu → **Exit** |
 | Closing Settings with the **X** button | Asks: **Minimize to tray** (the app keeps running) or **Close CloudStatus**. *Cancel* and Esc just close the window. |
 
-The icon:
+The icon follows the taskbar's light or dark theme. When all is well it is just the number, like
+the system icons next to it; a colored background means something worth a look:
 
 | Icon | Meaning |
 |---|---|
-| Number on dark | Battery at 50 % or more |
+| Number alone | Battery at 50 % or more |
 | Number on amber | Below 50 % |
 | Number on red | Below the low battery limit (20 % by default), or a charging error |
 | Number on teal | Charging or full |
-| Dark, no number | Dongle found, asking the headset |
-| Grey | Headset off |
-| Grey outline | No dongle |
+| Square outline | Dongle found, asking the headset |
+| Headset | Headset off |
+| Headset crossed out | No dongle |
+
+With high contrast on, every state keeps its own background, as in 1.0. The tooltip and the first
+line of the menu spell the state out, for example *78 % · Charging*.
 
 Charging and power changes show up as they happen, because the headset reports them. The battery
 itself is read every 5 minutes (configurable). When the battery drops under the low limit, and
@@ -70,7 +74,8 @@ the tray. After the PC sleeps, it reconnects to the dongle by itself.
   *Español* or *English*.
 - **Start with Windows**.
 
-Changes apply on save, without restarting. The window title shows the installed version.
+Changes apply on save, without restarting. The window title shows the installed version. The
+window, its title bar and the tray menu follow Windows' light or dark mode, also while open.
 
 ### Updates
 

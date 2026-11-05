@@ -157,33 +157,50 @@ function Save-Bmp($bitmap, $g, [string] $path) {
     $bitmap.Dispose()
 }
 
-# Top banner of the progress and files-in-use pages: white, logo on the right.
+# Installer colors (spec 013): the light palette of the settings window, with the teal accent.
+$installer = @{
+    Background = '#F3F3F3'
+    Card       = '#FBFBFB'
+    Border     = '#E5E5E5'
+    Text       = '#1A1A1A'
+    Accent     = '#007A66'
+}
+
+function Get-Color([string] $html) { [Drawing.ColorTranslator]::FromHtml($html) }
+
+# Top banner of the progress and files-in-use pages: a light card, logo on the right, and a thin
+# accent line along the bottom edge.
 function Write-InstallerBanner([string] $path) {
-    $bitmap, $g = New-InstallerCanvas 493 58
-    $logo = New-LogoBitmap 46
-    $g.DrawImage($logo, 493 - 46 - 8, 6, 46, 46)
+    $width, $height = 493, 58
+    $bitmap, $g = New-InstallerCanvas $width $height
+    $g.Clear((Get-Color $installer.Card))
+    $g.FillRectangle((New-Object Drawing.SolidBrush (Get-Color $installer.Border)), 0, $height - 3, $width, 1)
+    $g.FillRectangle((New-Object Drawing.SolidBrush (Get-Color $installer.Accent)), 0, $height - 2, $width, 2)
+    $logo = New-LogoBitmap 40
+    $g.DrawImage($logo, $width - 40 - 12, 7, 40, 40)
     $logo.Dispose()
     Save-Bmp $bitmap $g $path
 }
 
-# Side strip of the language and final pages (123 x 234 dialog units): logo and name on dark.
-# Only the strip is an image, so the controls next to it sit on the normal dialog background.
+# Side strip of the language and final pages (123 x 234 dialog units): logo and name on the light
+# background, with the accent along the inner edge. Only the strip is an image, so the controls
+# next to it sit on the normal dialog background.
 function Write-InstallerSide([string] $path) {
-    $panelWidth = 164
-    $bitmap, $g = New-InstallerCanvas $panelWidth 312
-    $panel = New-Object Drawing.Drawing2D.LinearGradientBrush (New-Object Drawing.PointF 0, 0), (New-Object Drawing.PointF 0, 312),
-        ([Drawing.ColorTranslator]::FromHtml($colors.BackgroundTop)), ([Drawing.ColorTranslator]::FromHtml($colors.BackgroundBottom))
-    $g.FillRectangle($panel, 0, 0, $panelWidth, 312)
+    $panelWidth, $panelHeight = 164, 312
+    $bitmap, $g = New-InstallerCanvas $panelWidth $panelHeight
+    $g.Clear((Get-Color $installer.Background))
+    $g.FillRectangle((New-Object Drawing.SolidBrush (Get-Color $installer.Accent)), $panelWidth - 3, 0, 3, $panelHeight)
 
-    $logoSize = 104
+    $logoSize = 96
     $logo = New-LogoBitmap $logoSize
-    $g.DrawImage($logo, ($panelWidth - $logoSize) / 2, 56, $logoSize, $logoSize)
+    $g.DrawImage($logo, ($panelWidth - 3 - $logoSize) / 2, 64, $logoSize, $logoSize)
     $logo.Dispose()
 
     $font = New-Object Drawing.Font 'Segoe UI Semibold', 13, ([Drawing.FontStyle]::Regular), ([Drawing.GraphicsUnit]::Point)
     $format = New-Object Drawing.StringFormat
     $format.Alignment = 'Center'
-    $g.DrawString('CloudStatus', $font, [Drawing.Brushes]::White, (New-Object Drawing.RectangleF 0, 176, $panelWidth, 40), $format)
+    $textBrush = New-Object Drawing.SolidBrush (Get-Color $installer.Text)
+    $g.DrawString('CloudStatus', $font, $textBrush, (New-Object Drawing.RectangleF 0, 176, ($panelWidth - 3), 40), $format)
     Save-Bmp $bitmap $g $path
 }
 
