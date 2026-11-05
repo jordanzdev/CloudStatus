@@ -277,7 +277,7 @@ None block this spec. Points the maintainer should weigh before approving:
 
 - 2026-11-05: Draft.
 - 2026-11-05: Approved, with REQ-013-17 and REQ-013-22 as proposed.
-- 2026-11-05: Implemented, `[hw]` criteria pending. Pending the maintainer's approval, three
-  clarifications from implementation: the field and warning-icon colors added to REQ-013-05; the
+- 2026-11-05: Implemented, `[hw]` criteria pending. Three clarifications from implementation,
+  approved by the maintainer: the field and warning-icon colors added to REQ-013-05; the
   language list keeps its theme's border (REQ-013-10), because a drawn border would double the one
   the combo box draws itself; and ordinal 133 is not needed (REQ-013-22).
