@@ -14,6 +14,7 @@ internal static unsafe class DongleWatcher
     static nint s_notification;
     static HidCandidate s_selected;
     static bool s_isConnected;
+    static SuspendGate s_gate;
 
     /// <summary>Raised when <see cref="IsConnected"/> or <see cref="Selected"/> changes.</summary>
     public static event Action? Changed;
@@ -45,7 +46,7 @@ internal static unsafe class DongleWatcher
     /// <summary>Handles WM_DEVICECHANGE. Devices that are not ours return here without allocating.</summary>
     public static void OnDeviceChange(nint change, nint data)
     {
-        if ((change != DBT_DEVICEARRIVAL && change != DBT_DEVICEREMOVECOMPLETE) || data == 0)
+        if ((change != DBT_DEVICEARRIVAL && change != DBT_DEVICEREMOVECOMPLETE) || data == 0 || !s_gate.AcceptsDeviceEvents)
             return;
 
         var header = (DEV_BROADCAST_DEVICEINTERFACE_W*)data;
@@ -74,12 +75,44 @@ internal static unsafe class DongleWatcher
             Search(); // finds nothing, or another dongle if there is one
     }
 
-    static void Search()
+    /// <summary>
+    /// Handles WM_POWERBROADCAST (spec 008): on suspend the dongle counts as removed, and on resume it
+    /// is searched for and opened again. The device notification stays registered throughout.
+    /// </summary>
+    public static void OnPowerBroadcast(nint powerEvent)
+    {
+        PowerAction action = powerEvent switch
+        {
+            PBT_APMSUSPEND => s_gate.OnSuspend(),
+            PBT_APMRESUMEAUTOMATIC => s_gate.OnResumeAutomatic(),
+            PBT_APMRESUMESUSPEND => s_gate.OnResumeSuspend(),
+            _ => PowerAction.None,
+        };
+
+        switch (action)
+        {
+            case PowerAction.Disconnect:
+                s_isConnected = false;
+                s_selected = default;
+                Changed?.Invoke(); // the handle is closed and the timers stopped, as on removal
+                break;
+
+            case PowerAction.Reconnect:
+                Search(forceChanged: true);
+                break;
+        }
+    }
+
+    /// <summary>
+    /// <paramref name="forceChanged"/> raises <see cref="Changed"/> even if the same dongle is found,
+    /// so that its handle is opened again.
+    /// </summary>
+    static void Search(bool forceChanged = false)
     {
         bool wasConnected = s_isConnected;
         HidCandidate previous = s_selected;
         s_isConnected = HidDiscovery.TryFind(out s_selected);
-        if (s_isConnected != wasConnected || (s_isConnected && !DevicePath.IsSame(s_selected.Path, previous.Path)))
+        if (forceChanged || s_isConnected != wasConnected || (s_isConnected && !DevicePath.IsSame(s_selected.Path, previous.Path)))
             Changed?.Invoke();
     }
 }

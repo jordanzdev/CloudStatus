@@ -23,5 +23,7 @@ GitHub Release.
   off, the low battery limit (15–45 %), how often the battery is read (1–30 minutes), language and
   *Start with Windows*. Settings are stored in `HKCU\Software\CloudStatus`. Started by hand the app
   opens Settings; started with Windows (`--startup`) it stays in the tray.
+- After the PC sleeps and wakes up, the dongle is opened again and the icon shows the headset
+  without replugging anything.
 
 [Unreleased]: https://github.com/jordanzdev/CloudStatus/commits/main
