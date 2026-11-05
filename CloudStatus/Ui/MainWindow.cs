@@ -59,6 +59,10 @@ internal static class MainWindow
                 DongleWatcher.OnDeviceChange(wParam, lParam);
                 return true;
 
+            case WM_POWERBROADCAST:
+                DongleWatcher.OnPowerBroadcast(wParam);
+                return false; // DefWindowProc answers: the return value only matters for queries, never refused
+
             case WM_DPICHANGED:
                 TrayIcon.OnDpiChanged((uint)wParam & 0xFFFF);
                 return true;

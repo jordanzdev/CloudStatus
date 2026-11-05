@@ -118,6 +118,7 @@ internal static unsafe partial class User32
     public const uint WM_COMMAND = 0x0111;
     public const uint WM_TIMER = 0x0113;
     public const uint WM_LBUTTONDBLCLK = 0x0203;
+    public const uint WM_POWERBROADCAST = 0x0218;
     public const uint WM_DEVICECHANGE = 0x0219;
     public const uint WM_DPICHANGED = 0x02E0;
     public const uint WM_USER = 0x0400;
@@ -175,6 +176,11 @@ internal static unsafe partial class User32
     public const uint MB_YESNOCANCEL = 0x00000003;
     public const uint MB_ICONQUESTION = 0x00000020;
     public const uint MB_ICONWARNING = 0x00000030;
+
+    // Power broadcasts (wParam of WM_POWERBROADCAST)
+    public const nint PBT_APMSUSPEND = 0x0004;
+    public const nint PBT_APMRESUMESUSPEND = 0x0007;
+    public const nint PBT_APMRESUMEAUTOMATIC = 0x0012;
 
     // Device notifications
     public const nint DBT_DEVICEARRIVAL = 0x8000;
