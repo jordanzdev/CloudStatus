@@ -6,7 +6,8 @@ namespace CloudStatus.Ui;
 internal enum TrayCommand
 {
     None = 0,
-    Exit = 1,
+    Settings = 1,
+    Exit = 2,
 }
 
 /// <summary>Context menu of the tray icon. It only presents the choice; the caller executes it.</summary>
@@ -20,6 +21,8 @@ internal static class TrayMenu
 
         try
         {
+            AppendMenuW(menu, MF_STRING, (nuint)TrayCommand.Settings, Strings.MenuSettings);
+            AppendMenuW(menu, MF_SEPARATOR, 0, null);
             AppendMenuW(menu, MF_STRING, (nuint)TrayCommand.Exit, Strings.MenuExit);
 
             // Without these two calls the menu does not close when clicking elsewhere.

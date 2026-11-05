@@ -6,10 +6,12 @@ namespace CloudStatus.Core.Tests;
 /// <summary>Spec 006, AC-006-01 to AC-006-10.</summary>
 public class LowBatteryAlertTests
 {
+    const byte DefaultLimit = IconDescription.DefaultLowLimit;
+
     LowBatteryAlert _alert;
 
     BatteryNotice On(int percent, ChargeState charge = ChargeState.NotCharging) =>
-        _alert.Evaluate(HeadsetPower.On, (byte)percent, charge, isChargeKnown: true);
+        _alert.Evaluate(HeadsetPower.On, (byte)percent, charge, isChargeKnown: true, DefaultLimit, isEnabled: true);
 
     BatteryNotice[] Discharge(params int[] percents) => percents.Select(p => On(p)).ToArray();
 
@@ -74,8 +76,8 @@ public class LowBatteryAlertTests
     internal void TurningOffAndOn_DoesNotRearm(HeadsetPower gone) // AC-006-08
     {
         Assert.Equal(BatteryNotice.Low, On(15));
-        Assert.Equal(BatteryNotice.None, _alert.Evaluate(gone, 0, ChargeState.NotCharging, isChargeKnown: false));
-        Assert.Equal(BatteryNotice.None, _alert.Evaluate(HeadsetPower.Checking, 0, ChargeState.NotCharging, isChargeKnown: false));
+        Assert.Equal(BatteryNotice.None, _alert.Evaluate(gone, 0, ChargeState.NotCharging, isChargeKnown: false, DefaultLimit, isEnabled: true));
+        Assert.Equal(BatteryNotice.None, _alert.Evaluate(HeadsetPower.Checking, 0, ChargeState.NotCharging, isChargeKnown: false, DefaultLimit, isEnabled: true));
         Assert.Equal(BatteryNotice.None, On(15));
     }
 
@@ -87,7 +89,7 @@ public class LowBatteryAlertTests
     [InlineData(HeadsetPower.NoDongle, ChargeState.NotCharging)]
     internal void NotDischarging_NeverFires(HeadsetPower power, ChargeState charge) // AC-006-09
     {
-        Assert.Equal(BatteryNotice.None, _alert.Evaluate(power, 5, charge, isChargeKnown: true));
+        Assert.Equal(BatteryNotice.None, _alert.Evaluate(power, 5, charge, isChargeKnown: true, DefaultLimit, isEnabled: true));
     }
 
     [Fact]
@@ -99,23 +101,56 @@ public class LowBatteryAlertTests
     [Fact]
     public void UnknownCharge_WaitsForTheChargingResponse()
     {
-        Assert.Equal(BatteryNotice.None, _alert.Evaluate(HeadsetPower.On, 15, ChargeState.NotCharging, isChargeKnown: false));
+        Assert.Equal(BatteryNotice.None, _alert.Evaluate(HeadsetPower.On, 15, ChargeState.NotCharging, isChargeKnown: false, DefaultLimit, isEnabled: true));
         Assert.Equal(BatteryNotice.None, On(15, ChargeState.Charging));
     }
 
     [Fact]
     public void UnknownCharge_FiresOnceItIsKnown()
     {
-        Assert.Equal(BatteryNotice.None, _alert.Evaluate(HeadsetPower.On, 15, ChargeState.NotCharging, isChargeKnown: false));
+        Assert.Equal(BatteryNotice.None, _alert.Evaluate(HeadsetPower.On, 15, ChargeState.NotCharging, isChargeKnown: false, DefaultLimit, isEnabled: true));
         Assert.Equal(BatteryNotice.Low, On(15));
     }
 
     [Fact]
     public void Limits_AreTheSpecValues()
     {
-        Assert.Equal(20, LowBatteryAlert.LowLimit);
-        Assert.Equal(IconDescription.LowLimit, LowBatteryAlert.LowLimit);
+        Assert.Equal(20, IconDescription.DefaultLowLimit);
+        Assert.Equal(IconDescription.DefaultLowLimit, Config.Default.LowBatteryPercent);
         Assert.Equal(10, LowBatteryAlert.CriticalLimit);
         Assert.Equal(5, LowBatteryAlert.RearmMargin);
+    }
+
+    // Spec 007: the low limit and the switch are settings.
+
+    BatteryNotice At(int percent, int limit, bool isEnabled = true) =>
+        _alert.Evaluate(HeadsetPower.On, (byte)percent, ChargeState.NotCharging, isChargeKnown: true, (byte)limit, isEnabled);
+
+    [Fact]
+    public void ConfiguredLimit_FiresUnderIt() // AC-007-05
+    {
+        Assert.Equal(BatteryNotice.None, At(31, 30));
+        Assert.Equal(BatteryNotice.None, At(30, 30));
+        Assert.Equal(BatteryNotice.Low, At(29, 30));
+    }
+
+    [Fact]
+    public void RaisingTheLimit_FiresAtOnce_LoweringItRearms() // AC-007-06
+    {
+        Assert.Equal(BatteryNotice.None, At(25, 20));
+        Assert.Equal(BatteryNotice.Low, At(25, 30));
+        Assert.Equal(BatteryNotice.None, At(25, 20));
+        Assert.Equal(BatteryNotice.Low, At(25, 30)); // 25 is 5 above 20, so lowering it rearmed the level
+    }
+
+    [Fact]
+    public void Disabled_CountsAsNotified() // AC-007-07
+    {
+        Assert.Equal(BatteryNotice.None, At(21, 20, isEnabled: false));
+        Assert.Equal(BatteryNotice.None, At(19, 20, isEnabled: false));
+        Assert.Equal(BatteryNotice.None, At(19, 20, isEnabled: true));
+        Assert.Equal(BatteryNotice.None, At(18, 20, isEnabled: true));
+        Assert.Equal(BatteryNotice.None, At(25, 20, isEnabled: true));
+        Assert.Equal(BatteryNotice.Low, At(19, 20, isEnabled: true));
     }
 }

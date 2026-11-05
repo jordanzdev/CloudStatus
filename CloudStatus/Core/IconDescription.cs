@@ -7,7 +7,7 @@ namespace CloudStatus.Core;
 internal readonly record struct IconDescription(int Number, uint Background, uint TextColor, bool IsHollow)
 {
     public const int NoNumber = -1;
-    public const int LowLimit = 20;
+    public const byte DefaultLowLimit = 20; // a setting since spec 007
     public const int MediumLimit = 50;
 
     const uint Teal = 0x26C6A6;
@@ -18,9 +18,9 @@ internal readonly record struct IconDescription(int Number, uint Background, uin
     const uint Black = 0x000000;
     const uint White = 0xFFFFFF;
 
-    public static IconDescription Describe(HeadsetPower power, byte percent, ChargeState charge) => power switch
+    public static IconDescription Describe(HeadsetPower power, byte percent, ChargeState charge, byte lowLimit) => power switch
     {
-        HeadsetPower.On => WithNumber(percent, BatteryBackground(percent, charge)),
+        HeadsetPower.On => WithNumber(percent, BatteryBackground(percent, charge, lowLimit)),
         HeadsetPower.Checking => WithoutNumber(Dark, isHollow: false),
         HeadsetPower.Off => WithoutNumber(Grey, isHollow: false),
         _ => WithoutNumber(Grey, isHollow: true),
@@ -34,13 +34,13 @@ internal readonly record struct IconDescription(int Number, uint Background, uin
         return (lighter + 0.05f) / (darker + 0.05f);
     }
 
-    static uint BatteryBackground(byte percent, ChargeState charge)
+    static uint BatteryBackground(byte percent, ChargeState charge, byte lowLimit)
     {
         if (charge == ChargeState.Error)
             return Red;
         if (charge is ChargeState.Charging or ChargeState.Full)
             return Teal; // it is being fixed, so a low level no longer needs attention
-        if (percent < LowLimit)
+        if (percent < lowLimit)
             return Red;
         return percent < MediumLimit ? Amber : Dark;
     }

@@ -19,5 +19,9 @@ GitHub Release.
   headset off or no dongle.
 - A silent Windows notice when the battery drops under 20 %, and again under 10 %. Each one is
   shown once until the headset charges or recovers 5 points.
+- A *Settings* window, from the tray menu or by double-clicking the icon: low-battery notice on or
+  off, the low battery limit (15–45 %), how often the battery is read (1–30 minutes), language and
+  *Start with Windows*. Settings are stored in `HKCU\Software\CloudStatus`. Started by hand the app
+  opens Settings; started with Windows (`--startup`) it stays in the tray.
 
 [Unreleased]: https://github.com/jordanzdev/CloudStatus/commits/main
