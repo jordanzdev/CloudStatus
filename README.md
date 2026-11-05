@@ -4,9 +4,8 @@ A Windows 10/11 tray app that shows the status of a **HyperX Cloud II Wireless**
 charging and whether it is on, with a notice when the battery runs low. Built to cost nothing while
 playing Counter-Strike 2 competitively.
 
-> **Before 1.0.** Everything planned for 1.0 is built, but there is no release yet and the
-> real-hardware checks are in progress. The firmware version comes after 1.0 (spec 011). The
-> project follows Spec Driven Development: code only comes after an approved spec.
+> The firmware version is planned for a later version (spec 011). The project follows Spec Driven
+> Development: code only comes after an approved spec.
 
 Supported: the HP-branded dongle (`0x03F0:0x018B`, tested) and `0x03F0:0x0696` (same protocol,
 untested). Kingston-era dongles are not supported in 1.0.
