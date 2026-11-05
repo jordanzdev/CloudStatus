@@ -41,6 +41,9 @@ internal static class ConfigStore
         return saved;
     }
 
+    /// <summary>Removes every stored setting, and the MSI's Install subkey with them (spec 009).</summary>
+    public static bool Delete() => RegistryKeyHandle.DeleteTree(KeyPath);
+
     /// <summary>Null when the value is missing or not a DWORD.</summary>
     static uint? ReadDword(in RegistryKeyHandle key, string name) =>
         key.TryGetDword(name, out uint value) ? value : null;

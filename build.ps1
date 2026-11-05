@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Builds the native CloudStatus.exe into .\artifacts.
+    Builds the native CloudStatus.exe and the MSI installer into .\artifacts.
 
 .EXAMPLE
     .\build.ps1 -Version 1.2.3
@@ -30,6 +30,14 @@ Write-Host "Publishing CloudStatus $Version (NativeAOT)..."
 Invoke-Checked { dotnet publish (Join-Path $root 'CloudStatus\CloudStatus.csproj') -c Release -p:Version=$Version -o $publish }
 
 $exe = Join-Path $publish 'CloudStatus.exe'
+$installerProject = Join-Path $root 'installer\CloudStatus.Installer.wixproj'
+
+Write-Host 'Building the MSI installer...'
+# Always rebuilt from scratch, so every MSI gets its own ProductCode and the current exe.
+Invoke-Checked {
+    dotnet build $installerProject -c Release --no-incremental "-p:ProductVersion=$Version" "-p:SourceExe=$exe" -o $artifacts
+}
+
 Copy-Item $exe (Join-Path $artifacts "CloudStatus-$Version-portable.exe") -Force
 
 # "hash  name" lines with LF endings, so `sha256sum -c SHA256SUMS.txt` works on any platform.

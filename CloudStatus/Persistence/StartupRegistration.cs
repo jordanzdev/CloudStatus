@@ -34,6 +34,24 @@ internal static class StartupRegistration
         writable.SetString(ValueName, StartupCommand.Build(path));
     }
 
+    /// <summary>
+    /// Removes the startup entry if it launches this exe (used by --uninstall, spec 009). An entry of
+    /// another copy, such as a portable one, is left alone.
+    /// </summary>
+    public static bool UnregisterCurrentExecutable()
+    {
+        string? registered;
+        using (RegistryKeyHandle key = RegistryKeyHandle.OpenForRead(RunKeyPath))
+            registered = key.GetString(ValueName);
+
+        string? path = ExecutablePath;
+        if (registered == null || path == null || !StartupCommand.Launches(registered, path))
+            return true;
+
+        using RegistryKeyHandle writable = RegistryKeyHandle.OpenForWrite(RunKeyPath);
+        return writable.DeleteValue(ValueName);
+    }
+
     /// <summary>Enables or disables startup. Does nothing when it is already in the requested state.</summary>
     public static bool TrySet(bool enabled)
     {

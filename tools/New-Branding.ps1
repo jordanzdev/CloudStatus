@@ -1,6 +1,7 @@
 <#
 .SYNOPSIS
-    Generates the CloudStatus branding in assets\: CloudStatus.ico (16-256 px) and logo.svg.
+    Generates the CloudStatus branding in assets\: CloudStatus.ico (16-256 px), logo.svg and the
+    installer bitmaps (installer-banner.bmp, installer-side.bmp).
 
 .DESCRIPTION
     The logo is a white headphone outline with three rising teal level bars between the ear cups,
@@ -139,8 +140,57 @@ $bars
     [IO.File]::WriteAllText($path, $svg.Replace("`r`n", "`n") + "`n", (New-Object Text.UTF8Encoding $false))
 }
 
+# Installer bitmaps (spec 009): 24-bit BMP at the sizes the dialogs expect.
+function New-InstallerCanvas([int] $width, [int] $height) {
+    $bitmap = New-Object Drawing.Bitmap $width, $height, ([Drawing.Imaging.PixelFormat]::Format24bppRgb)
+    $g = [Drawing.Graphics]::FromImage($bitmap)
+    $g.SmoothingMode = 'AntiAlias'
+    $g.InterpolationMode = 'HighQualityBicubic'
+    $g.TextRenderingHint = 'AntiAliasGridFit'
+    $g.Clear([Drawing.Color]::White)
+    $bitmap, $g
+}
+
+function Save-Bmp($bitmap, $g, [string] $path) {
+    $g.Dispose()
+    $bitmap.Save($path, [Drawing.Imaging.ImageFormat]::Bmp)
+    $bitmap.Dispose()
+}
+
+# Top banner of the progress and files-in-use pages: white, logo on the right.
+function Write-InstallerBanner([string] $path) {
+    $bitmap, $g = New-InstallerCanvas 493 58
+    $logo = New-LogoBitmap 46
+    $g.DrawImage($logo, 493 - 46 - 8, 6, 46, 46)
+    $logo.Dispose()
+    Save-Bmp $bitmap $g $path
+}
+
+# Side strip of the language and final pages (123 x 234 dialog units): logo and name on dark.
+# Only the strip is an image, so the controls next to it sit on the normal dialog background.
+function Write-InstallerSide([string] $path) {
+    $panelWidth = 164
+    $bitmap, $g = New-InstallerCanvas $panelWidth 312
+    $panel = New-Object Drawing.Drawing2D.LinearGradientBrush (New-Object Drawing.PointF 0, 0), (New-Object Drawing.PointF 0, 312),
+        ([Drawing.ColorTranslator]::FromHtml($colors.BackgroundTop)), ([Drawing.ColorTranslator]::FromHtml($colors.BackgroundBottom))
+    $g.FillRectangle($panel, 0, 0, $panelWidth, 312)
+
+    $logoSize = 104
+    $logo = New-LogoBitmap $logoSize
+    $g.DrawImage($logo, ($panelWidth - $logoSize) / 2, 56, $logoSize, $logoSize)
+    $logo.Dispose()
+
+    $font = New-Object Drawing.Font 'Segoe UI Semibold', 13, ([Drawing.FontStyle]::Regular), ([Drawing.GraphicsUnit]::Point)
+    $format = New-Object Drawing.StringFormat
+    $format.Alignment = 'Center'
+    $g.DrawString('CloudStatus', $font, [Drawing.Brushes]::White, (New-Object Drawing.RectangleF 0, 176, $panelWidth, 40), $format)
+    Save-Bmp $bitmap $g $path
+}
+
 Write-Ico (Join-Path $assets 'CloudStatus.ico') $sizes
 Write-Svg (Join-Path $assets 'logo.svg')
+Write-InstallerBanner (Join-Path $assets 'installer-banner.bmp')
+Write-InstallerSide (Join-Path $assets 'installer-side.bmp')
 
 # Preview for reviewing the design by hand; not committed.
 if ($env:CLOUDSTATUS_BRANDING_PREVIEW) {
@@ -148,4 +198,4 @@ if ($env:CLOUDSTATUS_BRANDING_PREVIEW) {
         [IO.File]::WriteAllBytes((Join-Path $env:CLOUDSTATUS_BRANDING_PREVIEW "logo-$size.png"), (New-LogoPng $size))
     }
 }
-Write-Host "Written to ${assets}: CloudStatus.ico ($($sizes -join ', ') px), logo.svg"
+Write-Host "Written to ${assets}: CloudStatus.ico ($($sizes -join ', ') px), logo.svg, installer-banner.bmp, installer-side.bmp"

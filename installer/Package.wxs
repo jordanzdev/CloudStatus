@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Per-user install into %LOCALAPPDATA%\Programs\CloudStatus: no administrator rights needed.
+  One MSI for every language: the first page lets the user choose it (Dialogs.wxs, Texts.wxs).
+  A running CloudStatus is closed through the Restart Manager (the app exits on WM_ENDSESSION).
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="CloudStatus"
+           Manufacturer="jordanzdev"
+           Version="$(var.ProductVersion)"
+           Language="1033"
+           Codepage="1252"
+           UpgradeCode="A9557E71-3A71-4FF2-B9FF-77B896C5690D"
+           Scope="perUser"
+           Compressed="yes">
+
+    <!-- Replaces any installed CloudStatus: older or same version, and any language. -->
+    <MajorUpgrade AllowSameVersionUpgrades="yes" IgnoreLanguage="yes"
+                  DowngradeErrorMessage="A newer version of CloudStatus is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Icon Id="AppIcon" SourceFile="$(sys.SOURCEFILEDIR)..\assets\CloudStatus.ico" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="ProgramsFolder" Name="Programs">
+        <Directory Id="INSTALLFOLDER" Name="CloudStatus" />
+      </Directory>
+    </StandardDirectory>
+    <StandardDirectory Id="ProgramMenuFolder" />
+
+    <!-- Files under the user profile need an HKCU key path and explicit folder removal (ICE38, ICE64). -->
+    <Component Id="AppExecutable" Directory="INSTALLFOLDER" Guid="186D89B1-1FB0-4B4F-BA69-C973520A6763">
+      <File Id="CloudStatusExe" Source="$(var.SourceExe)" KeyPath="no" />
+      <RegistryValue Root="HKCU" Key="Software\CloudStatus\Install" Name="Executable"
+                     Type="string" Value="[#CloudStatusExe]" KeyPath="yes" />
+      <Shortcut Id="AppShortcut" Directory="ProgramMenuFolder" Name="CloudStatus"
+                Target="[#CloudStatusExe]" WorkingDirectory="INSTALLFOLDER" />
+      <RemoveFolder Id="RemoveInstallFolder" Directory="INSTALLFOLDER" On="uninstall" />
+      <RemoveFolder Id="RemoveProgramsFolder" Directory="ProgramsFolder" On="uninstall" />
+    </Component>
+
+    <!--
+      The language chosen on the first page also becomes CloudStatus's language
+      (HKCU\Software\CloudStatus\Language: 1 = Spanish, 2 = English). Only when the page was shown,
+      so silent installs keep the user's setting.
+    -->
+    <Component Id="AppLanguage" Directory="INSTALLFOLDER" Guid="E6C916A3-B9AB-4F91-868B-367E9AA8C872"
+               Condition="CLOUDSTATUS_SETLANGUAGE = 1">
+      <RegistryValue Root="HKCU" Key="Software\CloudStatus" Name="Language"
+                     Type="integer" Value="[CLOUDSTATUS_LANGUAGEID]" KeyPath="yes" />
+    </Component>
+
+    <Feature Id="Main">
+      <ComponentRef Id="AppExecutable" />
+      <ComponentRef Id="AppLanguage" />
+    </Feature>
+
+    <!-- Real uninstall only (not an upgrade): the app removes its startup entry and settings. -->
+    <CustomAction Id="RemoveUserData" FileRef="CloudStatusExe" ExeCommand="--uninstall"
+                  Execute="deferred" Impersonate="yes" Return="ignore" />
+
+    <!-- Starts the app without arguments, so it opens its Settings window. -->
+    <CustomAction Id="LaunchApp" FileRef="CloudStatusExe" ExeCommand="" Return="asyncNoWait" />
+
+    <!--
+      Last page, "Create a desktop shortcut": the app creates it after the installation and exits.
+      Not part of the MSI's components; the RemoveUserData clean-up removes it on uninstall.
+    -->
+    <CustomAction Id="CreateDesktopShortcut" FileRef="CloudStatusExe" ExeCommand="--create-desktop-shortcut" Return="ignore" />
+
+    <InstallExecuteSequence>
+      <Custom Action="RemoveUserData" Before="RemoveFiles"
+              Condition="REMOVE~=&quot;ALL&quot; AND NOT UPGRADINGPRODUCTCODE" />
+      <!-- Basic UI (msiexec /passive) has no final page to ask, so the app is opened directly. -->
+      <Custom Action="LaunchApp" After="InstallFinalize"
+              Condition="NOT Installed AND NOT REMOVE AND UILevel = 3" />
+    </InstallExecuteSequence>
+
+    <UIRef Id="CloudStatusDialogs" />
+  </Package>
+</Wix>

@@ -15,5 +15,16 @@ internal static class StartupCommand
     public static bool IsCurrent(string registered, string executablePath) =>
         string.Equals(registered, Build(executablePath), StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// True if <paramref name="registered"/> launches this exe, with any arguments and in any letter
+    /// case (spec 009). Another exe whose path starts the same way does not count.
+    /// </summary>
+    public static bool Launches(string registered, string executablePath)
+    {
+        string quoted = Quote(executablePath);
+        return registered.StartsWith(quoted, StringComparison.OrdinalIgnoreCase) &&
+            (registered.Length == quoted.Length || registered[quoted.Length] == ' ');
+    }
+
     static string Quote(string path) => "\"" + path + "\"";
 }

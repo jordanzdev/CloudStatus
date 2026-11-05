@@ -1,0 +1,21 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+
+  <!--
+    Per-user MSI for CloudStatus, one for every language. Build the app first (see build.ps1), then:
+      dotnet build installer/CloudStatus.Installer.wixproj -c Release -p:ProductVersion=1.2.3
+  -->
+  <PropertyGroup>
+    <ProductVersion Condition="'$(ProductVersion)' == ''">1.0.0</ProductVersion>
+    <SourceExe Condition="'$(SourceExe)' == ''">$(MSBuildThisFileDirectory)..\artifacts\publish\CloudStatus.exe</SourceExe>
+    <OutputName>CloudStatus-$(ProductVersion)</OutputName>
+    <InstallerPlatform>x64</InstallerPlatform>
+    <DefineConstants>ProductVersion=$(ProductVersion);SourceExe=$(SourceExe)</DefineConstants>
+    <SuppressPdbOutput>true</SuppressPdbOutput>
+    <!--
+      ICE61: same-version upgrades are allowed on purpose, so reinstalling replaces the copy.
+      ICE91: per-user folders do not follow ALLUSERS; this package is per-user only, by design.
+    -->
+    <SuppressIces>ICE61;ICE91</SuppressIces>
+  </PropertyGroup>
+
+</Project>

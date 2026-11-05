@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Installer texts. Each one is a property that holds English by default; "Instalar" (the
+  Spanish button of the language page) sets the Spanish values before the next page is created.
+  To add a language: a radio button and its own Title/Prompt/Install/Cancel controls in
+  Dialogs.wxs, and one block like the Spanish one below.
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <!-- English (default) -->
+    <Property Id="TxtProgressTitle" Value="Installing CloudStatus" />
+    <Property Id="TxtProgressText" Value="Please wait while CloudStatus is installed." />
+    <Property Id="TxtExitTitle" Value="CloudStatus is installed" />
+    <Property Id="TxtExitText" Value="CloudStatus shows the headset's battery in the notification area. You can open its settings at any time from the Start menu." />
+    <Property Id="TxtOpenApp" Value="Open CloudStatus" />
+    <Property Id="TxtDesktopShortcut" Value="Create a desktop shortcut" />
+    <Property Id="TxtCancelledTitle" Value="Installation cancelled" />
+    <Property Id="TxtCancelledText" Value="CloudStatus was not installed. No changes were made." />
+    <Property Id="TxtFailedTitle" Value="Installation failed" />
+    <Property Id="TxtFailedText" Value="CloudStatus could not be installed. No changes were made." />
+    <Property Id="TxtInUseTitle" Value="Applications in use" />
+    <Property Id="TxtInUseText" Value="These applications must be closed to continue:" />
+    <Property Id="TxtInUseRetryText" Value="Close these applications and select Retry:" />
+    <Property Id="TxtInUseClose" Value="Close them automatically" />
+    <Property Id="TxtInUseKeep" Value="Do not close them (a restart will be required)" />
+    <Property Id="TxtFinish" Value="Finish" />
+    <Property Id="TxtOk" Value="OK" />
+    <Property Id="TxtCancel" Value="Cancel" />
+    <Property Id="TxtYes" Value="Yes" />
+    <Property Id="TxtNo" Value="No" />
+    <Property Id="TxtAbort" Value="Abort" />
+    <Property Id="TxtRetry" Value="Retry" />
+    <Property Id="TxtIgnore" Value="Ignore" />
+    <Property Id="TxtExit" Value="Exit" />
+
+    <!-- Spanish -->
+    <UI Id="CloudStatusTexts">
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtProgressTitle" Value="Instalando CloudStatus" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtProgressText" Value="Espera mientras se instala CloudStatus." />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtExitTitle" Value="CloudStatus se ha instalado" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtExitText" Value="CloudStatus muestra la batería de los cascos en el área de notificación. Puedes abrir sus ajustes cuando quieras desde el menú Inicio." />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtOpenApp" Value="Abrir CloudStatus" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtDesktopShortcut" Value="Crear un acceso directo en el escritorio" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtCancelledTitle" Value="Instalación cancelada" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtCancelledText" Value="CloudStatus no se ha instalado. No se ha hecho ningún cambio." />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtFailedTitle" Value="La instalación ha fallado" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtFailedText" Value="No se ha podido instalar CloudStatus. No se ha hecho ningún cambio." />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtInUseTitle" Value="Aplicaciones en uso" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtInUseText" Value="Hay que cerrar estas aplicaciones para continuar:" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtInUseRetryText" Value="Cierra estas aplicaciones y pulsa Reintentar:" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtInUseClose" Value="Cerrarlas automáticamente" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtInUseKeep" Value="No cerrarlas (habrá que reiniciar)" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtFinish" Value="Finalizar" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtOk" Value="Aceptar" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtCancel" Value="Cancelar" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtYes" Value="Sí" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtNo" Value="No" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtAbort" Value="Anular" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtRetry" Value="Reintentar" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtIgnore" Value="Omitir" />
+      <Publish Dialog="LanguageDlg" Control="InstallEs" Order="2" Property="TxtExit" Value="Salir" />
+      <!-- Cancelling on the language page in Spanish shows the "cancelled" page in Spanish too. -->
+      <Publish Dialog="LanguageDlg" Control="CancelEs" Order="2" Property="TxtCancelledTitle" Value="Instalación cancelada" />
+      <Publish Dialog="LanguageDlg" Control="CancelEs" Order="2" Property="TxtCancelledText" Value="CloudStatus no se ha instalado. No se ha hecho ningún cambio." />
+      <Publish Dialog="LanguageDlg" Control="CancelEs" Order="2" Property="TxtFinish" Value="Finalizar" />
+    </UI>
+  </Fragment>
+</Wix>

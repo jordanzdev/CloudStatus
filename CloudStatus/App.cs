@@ -44,6 +44,21 @@ internal static class App
 
     public static void Exit() => MainWindow.Close();
 
+    /// <summary>
+    /// --uninstall, run by the MSI on a real uninstall (spec 009): removes what the app wrote and
+    /// Windows Installer does not know about. No window, no device, nothing sent to the headset.
+    /// </summary>
+    public static int RemoveUserData()
+    {
+        bool removed = StartupRegistration.UnregisterCurrentExecutable();
+        DesktopShortcut.RemoveIfTargetsCurrentExecutable();
+        removed &= ConfigStore.Delete();
+        return removed ? 0 : 1;
+    }
+
+    /// <summary>--create-desktop-shortcut, run from the installer's last page when its box is checked.</summary>
+    public static int CreateDesktopShortcut() => DesktopShortcut.Create() ? 0 : 1;
+
     /// <summary>Saves and applies new settings. If they cannot be saved, nothing changes.</summary>
     public static ApplySettingsResult ApplySettings(in Config next, bool startWithWindows)
     {

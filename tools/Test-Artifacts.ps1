@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Checks the files build.ps1 produced: size budget, native exe, manifest and hashes.
+    Checks the files build.ps1 produced: size budget, native exe, manifest, MSI and hashes.
 
 .EXAMPLE
     .\tools\Test-Artifacts.ps1 -Version 1.2.3
@@ -41,6 +41,14 @@ Assert-True ($checksums -notcontains 13) 'SHA256SUMS.txt has no CR characters'
 $hash = (Get-FileHash $exe -Algorithm SHA256).Hash.ToLowerInvariant()
 $content = [Text.Encoding]::ASCII.GetString($checksums)
 Assert-True ($content.Contains("$hash  $exeName`n")) 'SHA256SUMS.txt matches the exe'
+
+$msiName = "CloudStatus-$Version.msi"
+$msi = Join-Path $artifacts $msiName
+Assert-True (Test-Path $msi) "$msiName exists"
+if (Test-Path $msi) {
+    $msiHash = (Get-FileHash $msi -Algorithm SHA256).Hash.ToLowerInvariant()
+    Assert-True ($content.Contains("$msiHash  $msiName`n")) 'SHA256SUMS.txt matches the MSI'
+}
 
 if ($failures -gt 0) {
     Write-Output "$failures check(s) failed."
