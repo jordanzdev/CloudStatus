@@ -15,7 +15,7 @@ spec is not started until the specs it depends on are at least Implemented.
 | [008](008-suspend-resume.md) | Suspend and resume | 004 | — | Implemented |
 | [009](009-installer-release.md) | MSI installer, release pipeline, `--uninstall`, `--create-desktop-shortcut` | 007 | — | Implemented |
 | [010](010-check-for-updates.md) | Check for updates | 009 | — | Implemented |
-| 011 | Firmware version | 004 | OQ-06, OQ-07 | Not started |
+| 011 | Firmware version | 004 | OQ-06, OQ-07 | Deferred by the maintainer (2026-11-05) |
 | 012 | Microphone mute state (optional) | 004 | Capture of `0x05`, see protocol.md section 6 | Not started |
 
 Open questions are listed in [protocol.md](../docs/protocol.md#8-open-questions).

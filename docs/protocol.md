@@ -183,8 +183,8 @@ this section.
 
 | Variant | Cmd | Purpose | Condition |
 |---|---|---|---|
-| HP | `0x05` | Mute state (spec 011) | Confirmed free of side effects by a capture of NGENUITY sending it |
-| Kingston | `0x11` | Firmware (spec 010) | Confirmed free of side effects on Kingston hardware |
+| HP | `0x05` | Mute state (spec 012) | Confirmed free of side effects by a capture of NGENUITY sending it |
+| Kingston | `0x11` | Firmware (spec 011) | Confirmed free of side effects on Kingston hardware |
 
 **Never sent**, on any variant:
 
@@ -278,8 +278,8 @@ auto94's monitor) before drawing any conclusion about push events.
 | **OQ-03** | What does a battery query return when the app starts with the headset already off: no response, or a response with battery 0? While running, power off is pushed. | Start-up state, spec 004 | Spec 003 criterion AC-003-10 |
 | **OQ-04** | Real latency of a command on this dongle. **Partly answered:** one sample of 34 ms, write to response, on `0x03F0:0x018B`. | 100 ms budget | Spec 003 criterion AC-003-11, 10 samples |
 | **OQ-05** | ~~Does `WriteFile` work on `COL03`?~~ **Answered: yes**, overlapped `WriteFile` with a 20-byte report, 2026-10-30 [L]. | — | — |
-| **OQ-06** | Headset firmware on HP. **Only Kingston has a documented command** (`0x11`). | Spec 010 | Capture scenario S5 |
-| **OQ-07** | Is the dongle's `bcdDevice` a firmware version? `0x4107` reads as `4.1.0.7`, the same shape as the `4.1.0.1` in [H]. This is an unverified hypothesis. If true, the dongle's firmware can be shown with no HID traffic at all. It would still say nothing about the headset's own firmware. | Spec 010 | Compare with what NGENUITY displays (scenario S5) |
+| **OQ-06** | Headset firmware on HP. **Only Kingston has a documented command** (`0x11`). | Spec 011 | Capture scenario S5 |
+| **OQ-07** | Is the dongle's `bcdDevice` a firmware version? `0x4107` reads as `4.1.0.7`, the same shape as the `4.1.0.1` in [H]. This is an unverified hypothesis. If true, the dongle's firmware can be shown with no HID traffic at all. It would still say nothing about the headset's own firmware. | Spec 011 | Compare with what NGENUITY displays (scenario S5) |
 | **OQ-08** | What is `COL02` for? It is input only and carries report IDs `0x64` and `0x65`. | Nothing yet | Capture scenarios S1–S4 |
 | **OQ-09** | Do queries cause audible clicks or dropouts? | Performance requirement | Listening test during the spec 003 hardware test |
 
