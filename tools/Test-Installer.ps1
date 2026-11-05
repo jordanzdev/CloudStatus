@@ -29,6 +29,8 @@ $startMenuLink = Join-Path ([Environment]::GetFolderPath('Programs')) 'CloudStat
 $desktopLink = Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'CloudStatus.lnk'
 $settingsKey = 'HKCU:\Software\CloudStatus'
 $runKey = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Run'
+# Some runner images have no Run key yet; the app creates it with RegCreateKeyExW, the test must too.
+if (-not (Test-Path $runKey)) { New-Item $runKey -Force | Out-Null }
 
 Add-Type -Namespace CloudStatusInstaller -Name Win32 -MemberDefinition @'
 [DllImport("user32.dll", CharSet = CharSet.Unicode)]
